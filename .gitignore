@@ -1,0 +1,14 @@
+# Dépendances
+/backend/vendor/
+/frontend/node_modules/
+
+# Variables d'environnement (secrets - JAMAIS sur Git)
+.env.local
+.env.*.local
+
+# Fichiers système
+.DS_Store
+*.log
+
+#IDE
+.idea/µ.vscode/
