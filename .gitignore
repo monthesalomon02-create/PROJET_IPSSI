@@ -1,4 +1,4 @@
-# Dépendances
+# Dependances
 /backend/vendor/
 /frontend/node_modules/
 
@@ -6,9 +6,10 @@
 .env.local
 .env.*.local
 
-# Fichiers système
+# Fichiers systeme
 .DS_Store
 *.log
 
-#IDE
-.idea/µ.vscode/
+# IDE
+.idea/
+.vscode/
