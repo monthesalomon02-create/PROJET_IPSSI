@@ -9,3 +9,10 @@
 
 controllers:
     resource: routing.controllers
+
+# Dummy route for the JWT login. It has no controller on purpose:
+# the security firewall's json_login authenticator intercepts the request.
+# It exists only so the router matches /api/login instead of throwing a 404.
+api_login:
+    path: /api/login
+    methods: [POST]
