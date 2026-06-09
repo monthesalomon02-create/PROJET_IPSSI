@@ -11,6 +11,8 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 
+use Symfony\Component\Security\Http\Attribute\IsGranted;
+
 class AuthController extends AbstractController
 {
     #[Route('/api/inscription', name: 'api_inscription', methods: ['POST'])]
@@ -74,6 +76,16 @@ class AuthController extends AbstractController
             'nom' => $utilisateur->getNom(),
             'prenom' => $utilisateur->getPrenom(),
             'roles' => $utilisateur->getRoles(),
+        ]);
+    }
+
+    #[Route('/api/admin/test', name: 'api_admin_test', methods: ['GET'])]
+    #[IsGranted('ROLE_ADMIN')]
+    public function adminTest(): JsonResponse
+    {
+        return $this->json([
+            'message' => 'Bravo, tu es bien administrateur !',
+            'email' => $this->getUser()->getUserIdentifier(),
         ]);
     }
 }
