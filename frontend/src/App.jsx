@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import Login from "./Login";
 import CreerEvenement from "./CreerEvenement";
 import MesEvenements from "./MesEvenements";
+import AdminModeration from "./AdminModeration";
 import "./App.css";
 
 function App() {
@@ -72,6 +73,7 @@ function App() {
           </div>
           <CreerEvenement token={token} />
           <MesEvenements token={token} />
+          <AdminModeration token={token} />
         </div>
       ) : (
         <Login onConnexion={(t) => setToken(t)} />
