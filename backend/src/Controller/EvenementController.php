@@ -10,6 +10,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 class EvenementController extends AbstractController
 {
@@ -38,6 +39,7 @@ class EvenementController extends AbstractController
 
     // CREATE — créer un évènement
     #[Route('/api/evenements', name: 'api_evenements_create', methods: ['POST'])]
+    #[IsGranted('ROLE_USER')]
     public function create(
         Request $request,
         EntityManagerInterface $em,
@@ -65,6 +67,11 @@ class EvenementController extends AbstractController
         $evenement->setDateCreation(new \DateTime());  // date du jour, automatique
         $evenement->setCategorie($categorie);
 
+        $evenement->setStatut('brouillon');
+        $evenement->setDateCreation(new \DateTime());
+        $evenement->setCategorie($categorie);
+        $evenement->setOrganisateur($this->getUser());
+
         $em->persist($evenement);
         $em->flush();
 
@@ -73,6 +80,7 @@ class EvenementController extends AbstractController
 
     // UPDATE — modifier un évènement
     #[Route('/api/evenements/{id}', name: 'api_evenements_update', methods: ['PUT'])]
+    #[IsGranted('ROLE_USER')]
     public function update(
         ?Evenement $evenement,
         Request $request,
@@ -109,6 +117,7 @@ class EvenementController extends AbstractController
 
     // DELETE — supprimer un évènement
     #[Route('/api/evenements/{id}', name: 'api_evenements_delete', methods: ['DELETE'])]
+    #[IsGranted('ROLE_USER')]
     public function delete(?Evenement $evenement, EntityManagerInterface $em): JsonResponse
     {
         if (!$evenement) {
@@ -139,6 +148,10 @@ class EvenementController extends AbstractController
             'categorie' => [
                 'id' => $evenement->getCategorie()->getId(),
                 'nom' => $evenement->getCategorie()->getNom(),
+            ],
+            'organisateur' => [
+                'id' => $evenement->getOrganisateur()->getId(),
+                'email' => $evenement->getOrganisateur()->getEmail(),
             ],
         ];
     }

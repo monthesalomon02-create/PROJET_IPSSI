@@ -60,6 +60,10 @@ class Evenement
     #[ORM\JoinColumn(nullable: false)]
     private ?Categorie $categorie = null;
 
+    #[ORM\ManyToOne(inversedBy: 'evenements')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Utilisateur $organisateur = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -241,6 +245,18 @@ class Evenement
     public function setCategorie(?Categorie $categorie): static
     {
         $this->categorie = $categorie;
+
+        return $this;
+    }
+
+    public function getOrganisateur(): ?Utilisateur
+    {
+        return $this->organisateur;
+    }
+
+    public function setOrganisateur(?Utilisateur $organisateur): static
+    {
+        $this->organisateur = $organisateur;
 
         return $this;
     }
