@@ -50,4 +50,30 @@ class EvenementRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * Les évènements d'un organisateur donné (tous statuts confondus)
+     */
+    public function findByOrganisateur(int $organisateurId): array
+    {
+        return $this->createQueryBuilder('e')
+            ->andWhere('e.organisateur = :id')
+            ->setParameter('id', $organisateurId)
+            ->orderBy('e.dateCreation', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Les évènements en attente de validation (pour l'admin)
+     */
+    public function findEnAttente(): array
+    {
+        return $this->createQueryBuilder('e')
+            ->andWhere('e.statut = :statut')
+            ->setParameter('statut', 'en_attente')
+            ->orderBy('e.dateSoumission', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }

@@ -225,6 +225,34 @@ class EvenementController extends AbstractController
         return $this->json($this->serialize($evenement));
     }
 
+    // Les évènements de l'organisateur connecté
+    #[Route('/api/mes-evenements', name: 'api_mes_evenements', methods: ['GET'])]
+    #[IsGranted('ROLE_USER')]
+    public function mesEvenements(EvenementRepository $evenementRepository): JsonResponse
+    {
+        $data = [];
+        /** @var \App\Entity\Utilisateur $utilisateur */
+        $utilisateur = $this->getUser();
+        foreach ($evenementRepository->findByOrganisateur($utilisateur->getId()) as $evenement) {
+            $data[] = $this->serialize($evenement);
+        }
+
+        return $this->json($data);
+    }
+
+    // La file des évènements en attente de validation (admin)
+    #[Route('/api/admin/file-attente', name: 'api_admin_file_attente', methods: ['GET'])]
+    #[IsGranted('ROLE_ADMIN')]
+    public function fileAttente(EvenementRepository $evenementRepository): JsonResponse
+    {
+        $data = [];
+        foreach ($evenementRepository->findEnAttente() as $evenement) {
+            $data[] = $this->serialize($evenement);
+        }
+
+        return $this->json($data);
+    }
+
     // Transformation d'un Evenement en tableau pour le JSON
     private function serialize(Evenement $evenement): array
     {
