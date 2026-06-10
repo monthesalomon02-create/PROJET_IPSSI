@@ -11,6 +11,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Email;
 
 class InscriptionController extends AbstractController
 {
@@ -20,7 +22,8 @@ class InscriptionController extends AbstractController
     public function inscrire(
         ?Evenement $evenement,
         EntityManagerInterface $em,
-        InscriptionRepository $inscriptionRepository
+        InscriptionRepository $inscriptionRepository,
+        MailerInterface $mailer
     ): JsonResponse {
         if (!$evenement) {
             return $this->json(['erreur' => 'Évènement introuvable'], 404);
@@ -61,6 +64,21 @@ class InscriptionController extends AbstractController
 
         $em->persist($inscription);
         $em->flush();
+
+        // Envoi de l'email de confirmation
+        $email = (new Email())
+            ->from('noreply@plateforme-evenements.com')
+            ->to($utilisateur->getEmail())
+            ->subject('Confirmation d\'inscription : ' . $evenement->getTitre())
+            ->text(
+                "Bonjour " . $utilisateur->getPrenom() . ",\n\n" .
+                "Votre inscription à l'évènement \"" . $evenement->getTitre() . "\" est confirmée.\n\n" .
+                "Date : " . $evenement->getDateDebut()->format('d/m/Y à H:i') . "\n" .
+                "Lieu : " . $evenement->getLieu() . "\n\n" .
+                "À bientôt !"
+            );
+
+        $mailer->send($email);
 
         return $this->json([
             'message' => 'Inscription confirmée',
