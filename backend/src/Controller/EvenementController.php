@@ -19,19 +19,31 @@ class EvenementController extends AbstractController
     public function list(EvenementRepository $evenementRepository): JsonResponse
     {
         $data = [];
-        foreach ($evenementRepository->findAll() as $evenement) {
+        foreach ($evenementRepository->findPublies() as $evenement) {
             $data[] = $this->serialize($evenement);
         }
 
         return $this->json($data);
     }
 
-    // READ — un seul évènement
+    // READ — un seul évènement (publié = public ; brouillon = propriétaire/admin seulement)
     #[Route('/api/evenements/{id}', name: 'api_evenements_show', methods: ['GET'])]
     public function show(?Evenement $evenement): JsonResponse
     {
         if (!$evenement) {
             return $this->json(['erreur' => 'Évènement introuvable'], 404);
+        }
+
+        // Si l'évènement n'est pas publié, seul le propriétaire ou un admin peut le voir
+        if ($evenement->getStatut() !== 'publie') {
+            $utilisateur = $this->getUser();
+            $estProprietaire = $utilisateur && $evenement->getOrganisateur() === $utilisateur;
+            $estAdmin = $utilisateur && in_array('ROLE_ADMIN', $utilisateur->getRoles());
+
+            if (!$estProprietaire && !$estAdmin) {
+                // On renvoie 404 (et non 403) pour ne pas révéler l'existence du brouillon
+                return $this->json(['erreur' => 'Évènement introuvable'], 404);
+            }
         }
 
         return $this->json($this->serialize($evenement));

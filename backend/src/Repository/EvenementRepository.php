@@ -40,4 +40,14 @@ class EvenementRepository extends ServiceEntityRepository
 //            ->getOneOrNullResult()
 //        ;
 //    }
+
+    public function findPublies(): array
+    {
+        return $this->createQueryBuilder('e')
+            ->andWhere('e.statut = :statut')
+            ->setParameter('statut', 'publie')
+            ->orderBy('e.dateDebut', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }
