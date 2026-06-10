@@ -131,6 +131,88 @@ class EvenementController extends AbstractController
         return $this->json(['message' => 'Évènement supprimé']);
     }
 
+    // L'organisateur soumet son évènement pour validation
+    #[Route('/api/evenements/{id}/soumettre', name: 'api_evenements_soumettre', methods: ['PATCH'])]
+    public function soumettre(?Evenement $evenement, EntityManagerInterface $em): JsonResponse
+    {
+        if (!$evenement) {
+            return $this->json(['erreur' => 'Évènement introuvable'], 404);
+        }
+
+        // Seul le propriétaire (ou un admin) peut soumettre — on réutilise le Voter
+        $this->denyAccessUnlessGranted(\App\Security\Voter\EvenementVoter::EDIT, $evenement);
+
+        // On ne peut soumettre que depuis "brouillon" ou "refuse"
+        if (!in_array($evenement->getStatut(), ['brouillon', 'refuse'])) {
+            return $this->json([
+                'erreur' => 'Seul un évènement en brouillon ou refusé peut être soumis (statut actuel : ' . $evenement->getStatut() . ')'
+            ], 409);
+        }
+
+        $evenement->setStatut('en_attente');
+        $evenement->setDateSoumission(new \DateTime());
+        $evenement->setMotifRefus(null); // on efface un éventuel ancien motif de refus
+
+        $em->flush();
+
+        return $this->json($this->serialize($evenement));
+    }
+
+    // L'admin approuve un évènement en attente → il est publié
+    #[Route('/api/evenements/{id}/approuver', name: 'api_evenements_approuver', methods: ['PATCH'])]
+    #[IsGranted('ROLE_ADMIN')]
+    public function approuver(?Evenement $evenement, EntityManagerInterface $em): JsonResponse
+    {
+        if (!$evenement) {
+            return $this->json(['erreur' => 'Évènement introuvable'], 404);
+        }
+
+        if ($evenement->getStatut() !== 'en_attente') {
+            return $this->json([
+                'erreur' => 'Seul un évènement en attente peut être approuvé (statut actuel : ' . $evenement->getStatut() . ')'
+            ], 409);
+        }
+
+        $evenement->setStatut('publie');
+        $evenement->setDateValidation(new \DateTime());
+        $evenement->setMotifRefus(null);
+
+        $em->flush();
+
+        return $this->json($this->serialize($evenement));
+    }
+
+    // L'admin refuse un évènement en attente → il est refusé, avec un motif
+    #[Route('/api/evenements/{id}/refuser', name: 'api_evenements_refuser', methods: ['PATCH'])]
+    #[IsGranted('ROLE_ADMIN')]
+    public function refuser(?Evenement $evenement, Request $request, EntityManagerInterface $em): JsonResponse
+    {
+        if (!$evenement) {
+            return $this->json(['erreur' => 'Évènement introuvable'], 404);
+        }
+
+        if ($evenement->getStatut() !== 'en_attente') {
+            return $this->json([
+                'erreur' => 'Seul un évènement en attente peut être refusé (statut actuel : ' . $evenement->getStatut() . ')'
+            ], 409);
+        }
+
+        $donnees = json_decode($request->getContent(), true);
+        $motif = $donnees['motif'] ?? null;
+
+        if (empty($motif)) {
+            return $this->json(['erreur' => 'Un motif de refus est obligatoire'], 400);
+        }
+
+        $evenement->setStatut('refuse');
+        $evenement->setMotifRefus($motif);
+        $evenement->setDateValidation(new \DateTime());
+
+        $em->flush();
+
+        return $this->json($this->serialize($evenement));
+    }
+
     // Transformation d'un Evenement en tableau pour le JSON
     private function serialize(Evenement $evenement): array
     {
@@ -146,6 +228,8 @@ class EvenementController extends AbstractController
             'prix' => $evenement->getPrix(),
             'image' => $evenement->getImage(),
             'statut' => $evenement->getStatut(),
+            'motif_refus' => $evenement->getMotifRefus(),
+            'date_soumission' => $evenement->getDateSoumission()?->format('Y-m-d H:i'),
             'categorie' => [
                 'id' => $evenement->getCategorie()->getId(),
                 'nom' => $evenement->getCategorie()->getNom(),
