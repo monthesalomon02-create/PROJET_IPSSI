@@ -23,6 +23,42 @@ function App() {
     setToken(null);
   };
 
+  const sInscrire = async (evenementId) => {
+    if (!token) {
+      alert("Vous devez être connecté pour vous inscrire");
+      return;
+    }
+
+    try {
+      const reponse = await fetch(
+        `http://localhost:8000/api/evenements/${evenementId}/inscription`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`, // on envoie le token !
+          },
+        },
+      );
+
+      const donnees = await reponse.json();
+
+      if (reponse.ok) {
+        alert(
+          "✅ " +
+            donnees.message +
+            " (places restantes : " +
+            donnees.places_restantes +
+            ")",
+        );
+      } else {
+        alert("❌ " + donnees.erreur);
+      }
+    } catch (err) {
+      alert("Erreur de connexion au serveur");
+    }
+  };
+
   return (
     <div style={{ maxWidth: "800px", margin: "0 auto", padding: "2rem" }}>
       {/* Barre du haut : selon qu'on est connecté ou pas */}
@@ -56,6 +92,7 @@ function App() {
             📅 {evenement.date_debut} &nbsp; 📍 {evenement.lieu}
           </p>
           <p>Catégorie : {evenement.categorie.nom}</p>
+          <button onClick={() => sInscrire(evenement.id)}>S'inscrire</button>
         </div>
       ))}
     </div>
