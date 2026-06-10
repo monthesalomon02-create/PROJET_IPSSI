@@ -64,7 +64,6 @@ function App() {
 
   return (
     <div style={{ maxWidth: "800px", margin: "0 auto", padding: "2rem" }}>
-      <h1 className="text-3xl font-bold text-primary-600">Test Tailwind ✅</h1>
       {/* Barre du haut : selon qu'on est connecté ou pas */}
       {token ? (
         <div>
@@ -80,30 +79,47 @@ function App() {
         <Login onConnexion={(t) => setToken(t)} />
       )}
 
-      <h1>Évènements à venir</h1>
+      <h1 className="text-3xl font-bold text-primary-800 mb-6">
+        Évènements à venir
+      </h1>
 
-      {chargement && <p>Chargement...</p>}
-      {!chargement && evenements.length === 0 && <p>Aucun évènement publié.</p>}
+      {chargement && <p className="text-gray-500">Chargement...</p>}
 
-      {evenements.map((evenement) => (
-        <div
-          key={evenement.id}
-          style={{
-            border: "1px solid #ccc",
-            borderRadius: "8px",
-            padding: "1rem",
-            marginBottom: "1rem",
-          }}
-        >
-          <h2>{evenement.titre}</h2>
-          <p>{evenement.description}</p>
-          <p>
-            📅 {evenement.date_debut} &nbsp; 📍 {evenement.lieu}
-          </p>
-          <p>Catégorie : {evenement.categorie.nom}</p>
-          <button onClick={() => sInscrire(evenement.id)}>S'inscrire</button>
-        </div>
-      ))}
+      {!chargement && evenements.length === 0 && (
+        <p className="text-gray-500">Aucun évènement publié pour le moment.</p>
+      )}
+
+      <div className="grid gap-6 sm:grid-cols-2">
+        {evenements.map((evenement) => (
+          <div
+            key={evenement.id}
+            className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden border border-gray-100"
+          >
+            <div className="bg-primary-600 h-2"></div>
+            <div className="p-5">
+              <span className="inline-block bg-primary-100 text-primary-700 text-xs font-semibold px-3 py-1 rounded-full mb-3">
+                {evenement.categorie.nom}
+              </span>
+              <h2 className="text-xl font-bold text-gray-800 mb-2">
+                {evenement.titre}
+              </h2>
+              <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                {evenement.description}
+              </p>
+              <div className="text-sm text-gray-500 space-y-1 mb-4">
+                <p>📅 {evenement.date_debut}</p>
+                <p>📍 {evenement.lieu}</p>
+              </div>
+              <button
+                onClick={() => sInscrire(evenement.id)}
+                className="w-full bg-primary-600 hover:bg-primary-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200"
+              >
+                S'inscrire
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
