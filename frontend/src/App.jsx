@@ -1,122 +1,55 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useState, useEffect } from "react";
+import "./App.css";
 
 function App() {
-  const [count, setCount] = useState(0)
+  // "state" : une variable que React surveille. Quand elle change, l'affichage se met à jour.
+  const [evenements, setEvenements] = useState([]); // la liste des évènements (vide au départ)
+  const [chargement, setChargement] = useState(true); // est-ce qu'on est en train de charger ?
+
+  // useEffect : du code qui s'exécute au chargement de la page
+  useEffect(() => {
+    fetch("http://localhost:8000/api/evenements") // on appelle ton API
+      .then((reponse) => reponse.json()) // on transforme la réponse en JSON
+      .then((donnees) => {
+        setEvenements(donnees); // on range les évènements dans le state
+        setChargement(false); // on a fini de charger
+      })
+      .catch((erreur) => {
+        console.error("Erreur :", erreur);
+        setChargement(false);
+      });
+  }, []); // le [] vide = "exécute une seule fois, au démarrage"
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
+    <div style={{ maxWidth: "800px", margin: "0 auto", padding: "2rem" }}>
+      <h1>Évènements à venir</h1>
+
+      {chargement && <p>Chargement...</p>}
+
+      {!chargement && evenements.length === 0 && (
+        <p>Aucun évènement publié pour le moment.</p>
+      )}
+
+      {evenements.map((evenement) => (
+        <div
+          key={evenement.id}
+          style={{
+            border: "1px solid #ccc",
+            borderRadius: "8px",
+            padding: "1rem",
+            marginBottom: "1rem",
+          }}
         >
-          Count is {count}
-        </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
+          <h2>{evenement.titre}</h2>
+          <p>{evenement.description}</p>
+          <p>
+            📅 {evenement.date_debut} &nbsp; 📍 {evenement.lieu}
+          </p>
+          <p>Catégorie : {evenement.categorie.nom}</p>
         </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+      ))}
+    </div>
+  );
 }
 
-export default App
+export default App;
