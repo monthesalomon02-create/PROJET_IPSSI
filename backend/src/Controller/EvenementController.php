@@ -80,7 +80,6 @@ class EvenementController extends AbstractController
 
     // UPDATE — modifier un évènement
     #[Route('/api/evenements/{id}', name: 'api_evenements_update', methods: ['PUT'])]
-    #[IsGranted('ROLE_USER')]
     public function update(
         ?Evenement $evenement,
         Request $request,
@@ -90,6 +89,8 @@ class EvenementController extends AbstractController
         if (!$evenement) {
             return $this->json(['erreur' => 'Évènement introuvable'], 404);
         }
+
+        $this->denyAccessUnlessGranted(\App\Security\Voter\EvenementVoter::EDIT, $evenement);
 
         $donnees = json_decode($request->getContent(), true);
 
@@ -117,12 +118,12 @@ class EvenementController extends AbstractController
 
     // DELETE — supprimer un évènement
     #[Route('/api/evenements/{id}', name: 'api_evenements_delete', methods: ['DELETE'])]
-    #[IsGranted('ROLE_USER')]
     public function delete(?Evenement $evenement, EntityManagerInterface $em): JsonResponse
     {
         if (!$evenement) {
             return $this->json(['erreur' => 'Évènement introuvable'], 404);
         }
+        $this->denyAccessUnlessGranted(\App\Security\Voter\EvenementVoter::DELETE, $evenement);
 
         $em->remove($evenement);
         $em->flush();
