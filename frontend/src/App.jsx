@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import Login from "./Login";
+import CreerEvenement from "./CreerEvenement";
 import "./App.css";
 
 function App() {
@@ -63,9 +64,12 @@ function App() {
     <div style={{ maxWidth: "800px", margin: "0 auto", padding: "2rem" }}>
       {/* Barre du haut : selon qu'on est connecté ou pas */}
       {token ? (
-        <div style={{ textAlign: "right" }}>
-          <span>✅ Connecté</span>{" "}
-          <button onClick={seDeconnecter}>Se déconnecter</button>
+        <div>
+          <div style={{ textAlign: "right" }}>
+            <span>✅ Connecté</span>{" "}
+            <button onClick={seDeconnecter}>Se déconnecter</button>
+          </div>
+          <CreerEvenement token={token} />
         </div>
       ) : (
         <Login onConnexion={(t) => setToken(t)} />
