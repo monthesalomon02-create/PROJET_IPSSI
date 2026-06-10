@@ -12,8 +12,11 @@ function AdminModeration({ token }) {
         if (!r.ok) return []; // si pas admin (403), on renvoie une liste vide
         return r.json();
       })
-      .then((donnees) => setEvenements(donnees))
-      .catch(() => {});
+      .then((donnees) => {
+        // On ne garde que si c'est bien un tableau (sinon : token expiré, erreur, etc.)
+        setEvenements(Array.isArray(donnees) ? donnees : []);
+      })
+      .catch(() => setEvenements([]));
   };
 
   useEffect(() => {

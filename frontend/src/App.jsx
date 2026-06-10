@@ -64,6 +64,7 @@ function App() {
 
   return (
     <div style={{ maxWidth: "800px", margin: "0 auto", padding: "2rem" }}>
+      <h1 className="text-3xl font-bold text-primary-600">Test Tailwind ✅</h1>
       {/* Barre du haut : selon qu'on est connecté ou pas */}
       {token ? (
         <div>

@@ -10,8 +10,11 @@ function MesEvenements({ token }) {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((r) => r.json())
-      .then((donnees) => setEvenements(donnees))
-      .catch(() => {});
+      .then((donnees) => {
+        // On ne garde que si c'est bien un tableau (sinon : token expiré, erreur, etc.)
+        setEvenements(Array.isArray(donnees) ? donnees : []);
+      })
+      .catch(() => setEvenements([]));
   };
 
   useEffect(() => {
