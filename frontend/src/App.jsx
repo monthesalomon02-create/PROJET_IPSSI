@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import Login from "./Login";
 import CreerEvenement from "./CreerEvenement";
+import MesEvenements from "./MesEvenements";
 import "./App.css";
 
 function App() {
@@ -70,6 +71,7 @@ function App() {
             <button onClick={seDeconnecter}>Se déconnecter</button>
           </div>
           <CreerEvenement token={token} />
+          <MesEvenements token={token} />
         </div>
       ) : (
         <Login onConnexion={(t) => setToken(t)} />
