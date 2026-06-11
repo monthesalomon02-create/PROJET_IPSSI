@@ -1,5 +1,30 @@
 import { useState, useEffect } from "react";
 
+// Petit utilitaire : transforme "2026-09-15 18:00" en jour + mois courts
+function formatDate(dateStr) {
+  const mois = [
+    "JAN",
+    "FÉV",
+    "MAR",
+    "AVR",
+    "MAI",
+    "JUIN",
+    "JUIL",
+    "AOÛT",
+    "SEP",
+    "OCT",
+    "NOV",
+    "DÉC",
+  ];
+  const d = new Date(dateStr.replace(" ", "T"));
+  if (isNaN(d)) return { jour: "--", mois: "--", heure: "" };
+  return {
+    jour: d.getDate(),
+    mois: mois[d.getMonth()],
+    heure: `${String(d.getHours()).padStart(2, "0")}h${String(d.getMinutes()).padStart(2, "0")}`,
+  };
+}
+
 function Accueil({ token }) {
   const [evenements, setEvenements] = useState([]);
   const [chargement, setChargement] = useState(true);
@@ -42,61 +67,162 @@ function Accueil({ token }) {
   };
 
   return (
-    <div>
-      {/* Bandeau d'en-tête (hero) */}
-      <div className="bg-gradient-to-r from-primary-600 to-primary-800 text-white py-16 px-4">
-        <div className="max-w-6xl mx-auto text-center">
-          <h1 className="text-4xl sm:text-5xl font-bold mb-4">
-            Découvrez nos évènements
+    <div className="eh-rise">
+      {/* HERO */}
+      <section className="eh-hero">
+        <div className="eh-hero-glow1"></div>
+        <div className="eh-hero-glow2"></div>
+        <div
+          className="eh-wrap"
+          style={{
+            position: "relative",
+            padding: "72px 26px 80px",
+            textAlign: "center",
+          }}
+        >
+          <span
+            className="eh-pill"
+            style={{
+              background: "rgba(110,231,183,0.14)",
+              color: "var(--mint-200)",
+              marginBottom: 20,
+            }}
+          >
+            <span
+              className="eh-pill-dot"
+              style={{ background: "var(--mint-300)" }}
+            ></span>
+            Plateforme évènementielle
+          </span>
+          <h1
+            style={{
+              fontSize: "clamp(36px, 5vw, 60px)",
+              color: "#fff",
+              lineHeight: 1,
+              marginBottom: 18,
+            }}
+          >
+            Là où la communauté
+            <br />
+            se <span style={{ color: "var(--mint-300)" }}>rassemble</span>.
           </h1>
-          <p className="text-lg text-primary-100">
-            Conférences, ateliers et rencontres près de chez vous
+          <p
+            style={{
+              fontSize: 18,
+              color: "rgba(255,255,255,0.72)",
+              maxWidth: 520,
+              margin: "0 auto",
+              lineHeight: 1.55,
+            }}
+          >
+            Conférences, ateliers et rencontres près de chez vous — réservez
+            votre place en deux clics.
           </p>
         </div>
-      </div>
+      </section>
 
-      <div className="max-w-6xl mx-auto px-4 py-10">
-        {chargement && (
-          <p className="text-gray-500 text-center">Chargement...</p>
-        )}
+      {/* LISTE */}
+      <div className="eh-wrap" style={{ padding: "48px 26px 80px" }}>
+        <div className="eh-section-head">
+          <div className="eh-eyebrow">À l'affiche</div>
+          <h2 style={{ fontSize: 28 }}>Prochains rendez-vous</h2>
+        </div>
+
+        {chargement && <p className="eh-muted">Chargement...</p>}
         {!chargement && evenements.length === 0 && (
-          <p className="text-gray-500 text-center">
-            Aucun évènement publié pour le moment.
-          </p>
+          <p className="eh-muted">Aucun évènement publié pour le moment.</p>
         )}
 
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {evenements.map((ev) => (
-            <div
-              key={ev.id}
-              className="bg-white rounded-2xl shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden border border-gray-100 flex flex-col"
-            >
-              <div className="bg-gradient-to-r from-primary-500 to-primary-600 h-24 flex items-center justify-center">
-                <span className="text-5xl">📅</span>
-              </div>
-              <div className="p-5 flex flex-col flex-1">
-                <span className="inline-block self-start bg-primary-100 text-primary-700 text-xs font-semibold px-3 py-1 rounded-full mb-3">
-                  {ev.categorie.nom}
-                </span>
-                <h2 className="text-xl font-bold text-gray-800 mb-2">
-                  {ev.titre}
-                </h2>
-                <p className="text-gray-600 text-sm mb-4 line-clamp-2 flex-1">
-                  {ev.description}
-                </p>
-                <div className="text-sm text-gray-500 space-y-1 mb-4">
-                  <p>🗓️ {ev.date_debut}</p>
-                  <p>📍 {ev.lieu}</p>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
+            gap: 22,
+          }}
+        >
+          {evenements.map((ev) => {
+            const date = formatDate(ev.date_debut);
+            return (
+              <article
+                key={ev.id}
+                className="eh-card eh-card-hover"
+                style={{
+                  overflow: "hidden",
+                  display: "flex",
+                  flexDirection: "column",
+                }}
+              >
+                <div className="eh-cover" style={{ height: 130 }}>
+                  <span className="eh-cover-label">visuel évènement</span>
+                  <span
+                    className="eh-pill eh-st-publie"
+                    style={{ position: "absolute", top: 12, left: 12 }}
+                  >
+                    {ev.categorie.nom}
+                  </span>
                 </div>
-                <button
-                  onClick={() => sInscrire(ev.id)}
-                  className="w-full bg-primary-600 hover:bg-primary-700 text-white font-semibold py-2.5 rounded-lg transition-colors"
+
+                <div
+                  className="eh-card-pad"
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 14,
+                    flex: 1,
+                  }}
                 >
-                  S'inscrire
-                </button>
-              </div>
-            </div>
-          ))}
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: 12,
+                      alignItems: "flex-start",
+                    }}
+                  >
+                    <div className="eh-dateblock">
+                      <div className="eh-dateblock-month">{date.mois}</div>
+                      <div className="eh-dateblock-day">{date.jour}</div>
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <h3
+                        style={{
+                          fontSize: 17,
+                          lineHeight: 1.2,
+                          marginBottom: 6,
+                        }}
+                      >
+                        {ev.titre}
+                      </h3>
+                      <div className="eh-muted" style={{ fontSize: 13 }}>
+                        🕒 {date.heure} · 📍 {ev.lieu}
+                      </div>
+                    </div>
+                  </div>
+
+                  <p
+                    className="eh-muted"
+                    style={{
+                      fontSize: 13.5,
+                      lineHeight: 1.5,
+                      flex: 1,
+                      display: "-webkit-box",
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: "vertical",
+                      overflow: "hidden",
+                    }}
+                  >
+                    {ev.description}
+                  </p>
+
+                  <button
+                    onClick={() => sInscrire(ev.id)}
+                    className="eh-btn eh-btn-primary eh-btn-block"
+                  >
+                    S'inscrire
+                  </button>
+                </div>
+              </article>
+            );
+          })}
         </div>
       </div>
     </div>
