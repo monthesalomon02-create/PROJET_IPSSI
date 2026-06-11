@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { configurerExpiration } from "./api";
+import { configurerExpiration, apiFetch } from "./api";
 import Navbar from "./components/Navbar";
 import Accueil from "./pages/Accueil";
 import Explorer from "./pages/Explorer";
@@ -13,6 +13,7 @@ import "./App.css";
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem("token"));
+  const [estAdmin, setEstAdmin] = useState(false);
 
   const seConnecter = (t) => {
     localStorage.setItem("token", t);
@@ -22,17 +23,37 @@ function App() {
   const seDeconnecter = () => {
     localStorage.removeItem("token");
     setToken(null);
+    setEstAdmin(false);
   };
 
   // Déconnexion automatique quand le token expire (401 détecté par apiFetch)
   configurerExpiration(() => {
     localStorage.removeItem("token");
     setToken(null);
+    setEstAdmin(false);
   });
+
+  // À chaque changement de token, on vérifie le rôle de l'utilisateur
+  useEffect(() => {
+    if (!token) {
+      setEstAdmin(false);
+      return;
+    }
+    apiFetch("/api/me")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        setEstAdmin(
+          Boolean(
+            d && Array.isArray(d.roles) && d.roles.includes("ROLE_ADMIN"),
+          ),
+        );
+      })
+      .catch(() => setEstAdmin(false));
+  }, [token]);
 
   return (
     <BrowserRouter>
-      <Navbar token={token} onDeconnexion={seDeconnecter} />
+      <Navbar token={token} estAdmin={estAdmin} onDeconnexion={seDeconnecter} />
       <main className="min-h-screen">
         <Routes>
           <Route path="/" element={<Accueil />} />

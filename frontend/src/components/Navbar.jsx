@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 
-function Navbar({ token, onDeconnexion }) {
+function Navbar({ token, estAdmin, onDeconnexion }) {
   const location = useLocation();
   const estActif = (chemin) => location.pathname === chemin;
 
@@ -34,12 +34,14 @@ function Navbar({ token, onDeconnexion }) {
             >
               Mon espace
             </Link>
-            <Link
-              to="/admin"
-              className={`eh-nav-link ${estActif("/admin") ? "active" : ""}`}
-            >
-              Admin
-            </Link>
+            {estAdmin && (
+              <Link
+                to="/admin"
+                className={`eh-nav-link ${estActif("/admin") ? "active" : ""}`}
+              >
+                Admin
+              </Link>
+            )}
             <button
               onClick={onDeconnexion}
               className="eh-btn eh-btn-sm"
