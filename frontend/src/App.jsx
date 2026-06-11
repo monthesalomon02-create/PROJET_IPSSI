@@ -1,8 +1,12 @@
 import { useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { configurerExpiration } from "./api";
 import Navbar from "./components/Navbar";
 import Accueil from "./pages/Accueil";
+import Explorer from "./pages/Explorer";
+import DetailEvenement from "./pages/DetailEvenement";
 import PageLogin from "./pages/PageLogin";
+import PageInscription from "./pages/PageInscription";
 import Organisateur from "./pages/Organisateur";
 import Admin from "./pages/Admin";
 import "./App.css";
@@ -20,12 +24,23 @@ function App() {
     setToken(null);
   };
 
+  // Déconnexion automatique quand le token expire (401 détecté par apiFetch)
+  configurerExpiration(() => {
+    localStorage.removeItem("token");
+    setToken(null);
+  });
+
   return (
     <BrowserRouter>
       <Navbar token={token} onDeconnexion={seDeconnecter} />
-      <main className="min-h-screen bg-gray-50">
+      <main className="min-h-screen">
         <Routes>
-          <Route path="/" element={<Accueil token={token} />} />
+          <Route path="/" element={<Accueil />} />
+          <Route path="/evenements" element={<Explorer />} />
+          <Route
+            path="/evenements/:id"
+            element={<DetailEvenement token={token} />}
+          />
           <Route
             path="/login"
             element={
@@ -35,6 +50,10 @@ function App() {
                 <PageLogin onConnexion={seConnecter} />
               )
             }
+          />
+          <Route
+            path="/inscription"
+            element={token ? <Navigate to="/" /> : <PageInscription />}
           />
           <Route
             path="/organisateur"

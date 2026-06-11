@@ -1,36 +1,14 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { apiFetch } from "../api";
+import CarteEvenement from "../CarteEvenement";
 
-// Petit utilitaire : transforme "2026-09-15 18:00" en jour + mois courts
-function formatDate(dateStr) {
-  const mois = [
-    "JAN",
-    "FÉV",
-    "MAR",
-    "AVR",
-    "MAI",
-    "JUIN",
-    "JUIL",
-    "AOÛT",
-    "SEP",
-    "OCT",
-    "NOV",
-    "DÉC",
-  ];
-  const d = new Date(dateStr.replace(" ", "T"));
-  if (isNaN(d)) return { jour: "--", mois: "--", heure: "" };
-  return {
-    jour: d.getDate(),
-    mois: mois[d.getMonth()],
-    heure: `${String(d.getHours()).padStart(2, "0")}h${String(d.getMinutes()).padStart(2, "0")}`,
-  };
-}
-
-function Accueil({ token }) {
+function Accueil() {
   const [evenements, setEvenements] = useState([]);
   const [chargement, setChargement] = useState(true);
 
   useEffect(() => {
-    fetch("http://localhost:8000/api/evenements")
+    apiFetch("/api/evenements")
       .then((r) => r.json())
       .then((donnees) => {
         setEvenements(Array.isArray(donnees) ? donnees : []);
@@ -39,32 +17,8 @@ function Accueil({ token }) {
       .catch(() => setChargement(false));
   }, []);
 
-  const sInscrire = async (id) => {
-    if (!token) {
-      alert("Vous devez être connecté pour vous inscrire");
-      return;
-    }
-    try {
-      const r = await fetch(
-        `http://localhost:8000/api/evenements/${id}/inscription`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        },
-      );
-      const d = await r.json();
-      alert(
-        r.ok
-          ? `✅ ${d.message} (places restantes : ${d.places_restantes})`
-          : `❌ ${d.erreur}`,
-      );
-    } catch {
-      alert("Erreur de connexion au serveur");
-    }
-  };
+  // On n'affiche que les 6 premiers sur l'accueil
+  const apercu = evenements.slice(0, 6);
 
   return (
     <div className="eh-rise">
@@ -111,21 +65,46 @@ function Accueil({ token }) {
               fontSize: 18,
               color: "rgba(255,255,255,0.72)",
               maxWidth: 520,
-              margin: "0 auto",
+              margin: "0 auto 28px",
               lineHeight: 1.55,
             }}
           >
             Conférences, ateliers et rencontres près de chez vous — réservez
             votre place en deux clics.
           </p>
+          <Link
+            to="/evenements"
+            className="eh-btn eh-btn-primary eh-btn-lg"
+            style={{ textDecoration: "none" }}
+          >
+            Explorer les évènements →
+          </Link>
         </div>
       </section>
 
-      {/* LISTE */}
+      {/* LISTE (aperçu) */}
       <div className="eh-wrap" style={{ padding: "48px 26px 80px" }}>
-        <div className="eh-section-head">
-          <div className="eh-eyebrow">À l'affiche</div>
-          <h2 style={{ fontSize: 28 }}>Prochains rendez-vous</h2>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "flex-end",
+            marginBottom: 22,
+            flexWrap: "wrap",
+            gap: 12,
+          }}
+        >
+          <div>
+            <div className="eh-eyebrow">À l'affiche</div>
+            <h2 style={{ fontSize: 28 }}>Prochains rendez-vous</h2>
+          </div>
+          <Link
+            to="/evenements"
+            className="eh-btn eh-btn-ghost"
+            style={{ textDecoration: "none" }}
+          >
+            Tout voir →
+          </Link>
         </div>
 
         {chargement && <p className="eh-muted">Chargement...</p>}
@@ -140,89 +119,9 @@ function Accueil({ token }) {
             gap: 22,
           }}
         >
-          {evenements.map((ev) => {
-            const date = formatDate(ev.date_debut);
-            return (
-              <article
-                key={ev.id}
-                className="eh-card eh-card-hover"
-                style={{
-                  overflow: "hidden",
-                  display: "flex",
-                  flexDirection: "column",
-                }}
-              >
-                <div className="eh-cover" style={{ height: 130 }}>
-                  <span className="eh-cover-label">visuel évènement</span>
-                  <span
-                    className="eh-pill eh-st-publie"
-                    style={{ position: "absolute", top: 12, left: 12 }}
-                  >
-                    {ev.categorie.nom}
-                  </span>
-                </div>
-
-                <div
-                  className="eh-card-pad"
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 14,
-                    flex: 1,
-                  }}
-                >
-                  <div
-                    style={{
-                      display: "flex",
-                      gap: 12,
-                      alignItems: "flex-start",
-                    }}
-                  >
-                    <div className="eh-dateblock">
-                      <div className="eh-dateblock-month">{date.mois}</div>
-                      <div className="eh-dateblock-day">{date.jour}</div>
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <h3
-                        style={{
-                          fontSize: 17,
-                          lineHeight: 1.2,
-                          marginBottom: 6,
-                        }}
-                      >
-                        {ev.titre}
-                      </h3>
-                      <div className="eh-muted" style={{ fontSize: 13 }}>
-                        🕒 {date.heure} · 📍 {ev.lieu}
-                      </div>
-                    </div>
-                  </div>
-
-                  <p
-                    className="eh-muted"
-                    style={{
-                      fontSize: 13.5,
-                      lineHeight: 1.5,
-                      flex: 1,
-                      display: "-webkit-box",
-                      WebkitLineClamp: 2,
-                      WebkitBoxOrient: "vertical",
-                      overflow: "hidden",
-                    }}
-                  >
-                    {ev.description}
-                  </p>
-
-                  <button
-                    onClick={() => sInscrire(ev.id)}
-                    className="eh-btn eh-btn-primary eh-btn-block"
-                  >
-                    S'inscrire
-                  </button>
-                </div>
-              </article>
-            );
-          })}
+          {apercu.map((ev) => (
+            <CarteEvenement key={ev.id} evenement={ev} />
+          ))}
         </div>
       </div>
     </div>

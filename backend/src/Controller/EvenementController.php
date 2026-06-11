@@ -256,6 +256,14 @@ class EvenementController extends AbstractController
     // Transformation d'un Evenement en tableau pour le JSON
     private function serialize(Evenement $evenement): array
     {
+        // Compter les inscriptions confirmées
+        $nbInscrits = 0;
+        foreach ($evenement->getInscriptions() as $inscription) {
+            if ($inscription->getStatut() === 'confirmee') {
+                $nbInscrits++;
+            }
+        }
+
         return [
             'id' => $evenement->getId(),
             'titre' => $evenement->getTitre(),
@@ -270,6 +278,9 @@ class EvenementController extends AbstractController
             'statut' => $evenement->getStatut(),
             'motif_refus' => $evenement->getMotifRefus(),
             'date_soumission' => $evenement->getDateSoumission()?->format('Y-m-d H:i'),
+            'inscrits' => $nbInscrits,
+            'places_restantes' => max(0, $evenement->getCapaciteMax() - $nbInscrits),
+            'complet' => $nbInscrits >= $evenement->getCapaciteMax(),
             'categorie' => [
                 'id' => $evenement->getCategorie()->getId(),
                 'nom' => $evenement->getCategorie()->getNom(),

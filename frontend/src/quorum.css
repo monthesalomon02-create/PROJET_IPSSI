@@ -585,3 +585,9 @@ h5 {
     grid-template-columns: 1fr !important;
   }
 }
+
+@media (max-width: 860px) {
+  .eh-wrap[style*="grid-template-columns"] {
+    grid-template-columns: 1fr !important;
+  }
+}

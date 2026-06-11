@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { apiFetch } from "./api";
 
 const MOIS = [
   "JANV.",
@@ -51,7 +52,7 @@ function CreerEvenement({ token, onCree, evenementAEditer }) {
   const [message, setMessage] = useState("");
 
   useEffect(() => {
-    fetch("http://localhost:8000/api/categories")
+    apiFetch("/api/categories")
       .then((r) => r.json())
       .then((d) => setCategories(Array.isArray(d) ? d : []))
       .catch(() => {});
@@ -74,17 +75,11 @@ function CreerEvenement({ token, onCree, evenementAEditer }) {
       let id;
       if (enEdition) {
         // MODIFICATION → PUT
-        const r = await fetch(
-          `http://localhost:8000/api/evenements/${evenementAEditer.id}`,
-          {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify(corps),
-          },
-        );
+        const r = await apiFetch(`/api/evenements/${evenementAEditer.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(corps),
+        });
         const d = await r.json();
         if (!r.ok) {
           setMessage("❌ " + (d.erreur || "Erreur"));
@@ -94,12 +89,9 @@ function CreerEvenement({ token, onCree, evenementAEditer }) {
         setMessage("✅ Évènement modifié");
       } else {
         // CRÉATION → POST
-        const r = await fetch("http://localhost:8000/api/evenements", {
+        const r = await apiFetch("/api/evenements", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(corps),
         });
         const d = await r.json();
@@ -113,9 +105,8 @@ function CreerEvenement({ token, onCree, evenementAEditer }) {
 
       // Soumettre pour validation si demandé
       if (soumettre) {
-        await fetch(`http://localhost:8000/api/evenements/${id}/soumettre`, {
+        await apiFetch(`/api/evenements/${id}/soumettre`, {
           method: "PATCH",
-          headers: { Authorization: `Bearer ${token}` },
         });
       }
 

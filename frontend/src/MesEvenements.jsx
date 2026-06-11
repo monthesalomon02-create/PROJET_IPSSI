@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { apiFetch } from "./api";
 
 const STATUT_STYLE = {
   brouillon: {
@@ -47,9 +48,7 @@ function MesEvenements({ token, onModifier }) {
   const [filtre, setFiltre] = useState("tous");
 
   const charger = () => {
-    fetch("http://localhost:8000/api/mes-evenements", {
-      headers: { Authorization: `Bearer ${token}` },
-    })
+    apiFetch("/api/mes-evenements")
       .then((r) => r.json())
       .then((d) => setEvenements(Array.isArray(d) ? d : []))
       .catch(() => setEvenements([]));
@@ -62,13 +61,10 @@ function MesEvenements({ token, onModifier }) {
   const soumettre = async (id) => {
     setMessage("");
     try {
-      const r = await fetch(
-        `http://localhost:8000/api/evenements/${id}/soumettre`,
-        {
-          method: "PATCH",
-          headers: { Authorization: `Bearer ${token}` },
-        },
-      );
+      const r = await apiFetch(`/api/evenements/${id}/soumettre`, {
+        method: "PATCH",
+      });
+
       const d = await r.json();
       setMessage(
         r.ok ? "✅ Évènement soumis pour validation" : "❌ " + d.erreur,

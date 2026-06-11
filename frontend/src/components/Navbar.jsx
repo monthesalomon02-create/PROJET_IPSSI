@@ -17,7 +17,13 @@ function Navbar({ token, onDeconnexion }) {
 
       <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
         <Link to="/" className={`eh-nav-link ${estActif("/") ? "active" : ""}`}>
-          Évènements
+          Accueil
+        </Link>
+        <Link
+          to="/evenements"
+          className={`eh-nav-link ${estActif("/evenements") ? "active" : ""}`}
+        >
+          Explorer
         </Link>
 
         {token ? (
@@ -47,13 +53,21 @@ function Navbar({ token, onDeconnexion }) {
             </button>
           </>
         ) : (
-          <Link
-            to="/login"
-            className="eh-btn eh-btn-primary eh-btn-sm"
-            style={{ marginLeft: "8px", textDecoration: "none" }}
-          >
-            Connexion
-          </Link>
+          <>
+            <Link
+              to="/inscription"
+              className={`eh-nav-link ${estActif("/inscription") ? "active" : ""}`}
+            >
+              Créer un compte
+            </Link>
+            <Link
+              to="/login"
+              className="eh-btn eh-btn-primary eh-btn-sm"
+              style={{ marginLeft: "8px", textDecoration: "none" }}
+            >
+              Connexion
+            </Link>
+          </>
         )}
       </div>
     </nav>
