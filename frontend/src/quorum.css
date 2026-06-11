@@ -1,0 +1,581 @@
+/* ============================================================
+   EventHub — Design System
+   Plateforme de gestion d'évènements
+   ============================================================ */
+
+:root {
+  /* Forest greens (brand) */
+  --forest-950: #061d16;
+  --forest-900: #0a2e22;
+  --forest-800: #0b3d2e;
+  --forest-700: #11503c;
+  --forest-600: #166c4d;
+
+  /* Emerald (primary action) */
+  --emerald-600: #128a45;
+  --emerald-500: #16a34a;
+  --emerald-400: #2bbd63;
+  --mint-300: #6ee7b7;
+  --mint-200: #a7f3d0;
+  --mint-100: #d9f7e8;
+
+  /* Status */
+  --amber: #c9871c;
+  --amber-bg: #fbf1dc;
+  --rose: #c0463c;
+  --rose-bg: #f8e3e0;
+  --slate: #69776f;
+  --slate-bg: #eaefec;
+  --info: #2f6f8f;
+  --info-bg: #e2eef3;
+
+  /* Green-tinted neutrals */
+  --ink-900: #0b1410;
+  --ink-800: #16241d;
+  --ink-700: #2a3a32;
+  --ink-600: #43534b;
+  --ink-500: #5d6e64;
+  --ink-400: #859189;
+  --ink-300: #abb5ae;
+  --line: #e2eae4;
+  --line-strong: #cdd8d0;
+  --paper: #f4f8f4;
+  --paper-2: #ecf2ec;
+  --card: #ffffff;
+
+  /* Typography */
+  --font-display: "Space Grotesk", system-ui, sans-serif;
+  --font-body: "Manrope", system-ui, sans-serif;
+  --font-mono: "Space Mono", ui-monospace, monospace;
+
+  /* Radius */
+  --r-sm: 9px;
+  --r: 14px;
+  --r-lg: 20px;
+  --r-xl: 28px;
+
+  /* Shadow (green-tinted) */
+  --sh-sm: 0 1px 2px rgba(8, 40, 28, 0.06), 0 1px 3px rgba(8, 40, 28, 0.05);
+  --sh: 0 4px 14px rgba(8, 40, 28, 0.07), 0 1px 4px rgba(8, 40, 28, 0.05);
+  --sh-lg: 0 18px 50px rgba(8, 40, 28, 0.13), 0 4px 12px rgba(8, 40, 28, 0.07);
+  --sh-xl: 0 30px 80px rgba(6, 29, 22, 0.28);
+
+  --maxw: 1240px;
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--ink-900);
+  background: var(--paper);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  line-height: 1.5;
+}
+
+::selection {
+  background: var(--mint-200);
+  color: var(--forest-900);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--ink-900);
+}
+
+.eh-mono {
+  font-family: var(--font-mono);
+}
+.eh-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--emerald-600);
+  font-weight: 700;
+}
+
+/* ---------- Buttons ---------- */
+.eh-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 14.5px;
+  letter-spacing: -0.01em;
+  padding: 11px 18px;
+  border-radius: 11px;
+  transition: all 0.16s ease;
+  white-space: nowrap;
+  line-height: 1;
+  cursor: pointer;
+  border: none;
+}
+.eh-btn:disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+.eh-btn-primary {
+  background: var(--emerald-500);
+  color: #fff;
+  box-shadow: var(--sh-sm);
+}
+.eh-btn-primary:hover {
+  background: var(--emerald-600);
+  transform: translateY(-1px);
+  box-shadow: var(--sh);
+}
+.eh-btn-dark {
+  background: var(--forest-800);
+  color: #fff;
+}
+.eh-btn-dark:hover {
+  background: var(--forest-900);
+  transform: translateY(-1px);
+}
+.eh-btn-ghost {
+  background: var(--card);
+  color: var(--ink-800);
+  border: 1px solid var(--line-strong);
+}
+.eh-btn-ghost:hover {
+  border-color: var(--ink-300);
+  background: var(--paper);
+}
+.eh-btn-soft {
+  background: var(--mint-100);
+  color: var(--forest-700);
+}
+.eh-btn-soft:hover {
+  background: var(--mint-200);
+}
+.eh-btn-danger {
+  background: var(--rose-bg);
+  color: var(--rose);
+}
+.eh-btn-danger:hover {
+  background: #f3d3cf;
+}
+.eh-btn-block {
+  width: 100%;
+}
+.eh-btn-sm {
+  padding: 8px 13px;
+  font-size: 13px;
+  border-radius: 9px;
+}
+.eh-btn-lg {
+  padding: 14px 24px;
+  font-size: 16px;
+  border-radius: 13px;
+}
+
+/* ---------- Pills / badges ---------- */
+.eh-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  padding: 4px 10px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.eh-pill-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+.eh-st-publie {
+  background: var(--mint-100);
+  color: var(--emerald-600);
+}
+.eh-st-attente {
+  background: var(--amber-bg);
+  color: var(--amber);
+}
+.eh-st-refuse {
+  background: var(--rose-bg);
+  color: var(--rose);
+}
+.eh-st-brouillon {
+  background: var(--slate-bg);
+  color: var(--slate);
+}
+.eh-st-depublie {
+  background: var(--slate-bg);
+  color: var(--ink-500);
+}
+
+.eh-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink-600);
+  padding: 5px 11px;
+  border-radius: 20px;
+  background: var(--paper-2);
+  border: 1px solid var(--line);
+}
+
+/* ---------- Cards ---------- */
+.eh-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+}
+.eh-card-pad {
+  padding: 22px;
+}
+.eh-card-hover {
+  transition:
+    transform 0.18s,
+    box-shadow 0.18s;
+}
+.eh-card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--sh-lg);
+}
+
+/* Cover placeholder (visuel évènement) */
+.eh-cover {
+  position: relative;
+  overflow: hidden;
+  background:
+    repeating-linear-gradient(
+      135deg,
+      rgba(11, 61, 46, 0.05) 0 10px,
+      rgba(11, 61, 46, 0.02) 10px 20px
+    ),
+    linear-gradient(160deg, var(--mint-100), var(--paper-2));
+  display: grid;
+  place-items: center;
+}
+.eh-cover-label {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--forest-600);
+  opacity: 0.7;
+}
+
+/* ---------- Layout ---------- */
+.eh-wrap {
+  width: 100%;
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 0 26px;
+}
+
+/* Capacity bar */
+.eh-capbar {
+  height: 7px;
+  border-radius: 20px;
+  background: var(--paper-2);
+  overflow: hidden;
+}
+.eh-capbar-fill {
+  height: 100%;
+  border-radius: 20px;
+  background: var(--emerald-500);
+  transition: width 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.eh-capbar-fill.warn {
+  background: var(--amber);
+}
+.eh-capbar-fill.full {
+  background: var(--rose);
+}
+
+/* ---------- Inputs ---------- */
+.eh-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink-700);
+  letter-spacing: -0.01em;
+}
+.eh-input,
+.eh-textarea,
+.eh-select {
+  width: 100%;
+  padding: 11px 13px;
+  border-radius: 11px;
+  border: 1.5px solid var(--line-strong);
+  background: var(--card);
+  font-size: 14.5px;
+  transition: all 0.15s;
+  color: var(--ink-900);
+  font-family: var(--font-body);
+}
+.eh-input:focus,
+.eh-textarea:focus,
+.eh-select:focus {
+  outline: none;
+  border-color: var(--emerald-500);
+  box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.12);
+}
+.eh-input::placeholder,
+.eh-textarea::placeholder {
+  color: var(--ink-400);
+}
+.eh-textarea {
+  resize: vertical;
+  min-height: 96px;
+  line-height: 1.55;
+}
+
+/* ---------- Navbar ---------- */
+.eh-appbar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  padding: 0 26px;
+  height: 66px;
+  background: var(--forest-900);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.eh-brand {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  cursor: pointer;
+  user-select: none;
+}
+.eh-brand-mark {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  background: linear-gradient(150deg, var(--emerald-400), var(--forest-700));
+  display: grid;
+  place-items: center;
+  font-size: 18px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    var(--sh-sm);
+}
+.eh-brand-name {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 19px;
+  letter-spacing: -0.03em;
+  color: #fff;
+}
+.eh-brand-name .accent {
+  color: var(--mint-300);
+}
+.eh-nav-link {
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.65);
+  padding: 8px 13px;
+  border-radius: 9px;
+  transition: all 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+}
+.eh-nav-link:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+}
+.eh-nav-link.active {
+  color: var(--mint-200);
+  background: rgba(110, 231, 183, 0.14);
+}
+
+/* ---------- Hero ---------- */
+.eh-hero {
+  background: var(--forest-900);
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+}
+.eh-hero-glow1 {
+  position: absolute;
+  top: -160px;
+  right: -120px;
+  width: 520px;
+  height: 520px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(43, 189, 99, 0.32), transparent 65%);
+  pointer-events: none;
+}
+.eh-hero-glow2 {
+  position: absolute;
+  bottom: -200px;
+  left: -140px;
+  width: 460px;
+  height: 460px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(110, 231, 183, 0.16),
+    transparent 68%
+  );
+  pointer-events: none;
+}
+
+/* ---------- Section heading ---------- */
+.eh-section-head {
+  margin-bottom: 22px;
+}
+
+/* Date block */
+.eh-dateblock {
+  width: 56px;
+  flex-shrink: 0;
+  text-align: center;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: var(--card);
+  box-shadow: var(--sh-sm);
+}
+.eh-dateblock-month {
+  background: var(--forest-800);
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 4px 0;
+  font-weight: 700;
+}
+.eh-dateblock-day {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 24px;
+  line-height: 1;
+  padding: 7px 0;
+  letter-spacing: -0.03em;
+}
+
+/* ---------- Toasts ---------- */
+.eh-toast-wrap {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 90;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+}
+.eh-toast {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  background: var(--forest-900);
+  color: #fff;
+  padding: 13px 18px;
+  border-radius: 13px;
+  box-shadow: var(--sh-xl);
+  font-size: 14px;
+  font-weight: 500;
+  animation: ehToastIn 0.35s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+@keyframes ehToastIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ---------- Modal ---------- */
+.eh-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  background: rgba(6, 29, 22, 0.5);
+  backdrop-filter: blur(4px);
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  animation: ehFade 0.2s ease;
+}
+@keyframes ehFade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.eh-modal {
+  background: var(--card);
+  border-radius: var(--r-xl);
+  box-shadow: var(--sh-xl);
+  width: 100%;
+  max-width: 520px;
+  animation: ehPop 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.15);
+  overflow: hidden;
+}
+@keyframes ehPop {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ---------- Helpers ---------- */
+.eh-muted {
+  color: var(--ink-500);
+}
+.eh-rise {
+  animation: ehRise 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+@keyframes ehRise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 760px) {
+  .eh-wrap {
+    padding: 0 16px;
+  }
+  .eh-appbar {
+    padding: 0 14px;
+    gap: 12px;
+  }
+  .eh-hide-mobile {
+    display: none !important;
+  }
+}
