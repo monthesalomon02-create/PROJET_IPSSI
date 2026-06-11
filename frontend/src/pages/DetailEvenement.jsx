@@ -346,12 +346,55 @@ function DetailEvenement({ token }) {
               </button>
             </>
           ) : (
-            <button
-              onClick={sInscrire}
-              className="eh-btn eh-btn-primary eh-btn-block eh-btn-lg"
-            >
-              {token ? "S'inscrire" : "Se connecter pour s'inscrire"}
-            </button>
+            (() => {
+              const passe =
+                new Date(String(ev.date_debut).replace(" ", "T")) < new Date();
+              if (passe) {
+                return (
+                  <div
+                    className="eh-pill eh-st-depublie"
+                    style={{
+                      width: "100%",
+                      justifyContent: "center",
+                      padding: "12px",
+                    }}
+                  >
+                    Évènement terminé
+                  </div>
+                );
+              }
+              if (ev.complet) {
+                return (
+                  <div
+                    className="eh-pill eh-st-refuse"
+                    style={{
+                      width: "100%",
+                      justifyContent: "center",
+                      padding: "12px",
+                    }}
+                  >
+                    Complet — plus de place
+                  </div>
+                );
+              }
+              return (
+                <>
+                  <p
+                    className="eh-mono"
+                    style={{ fontSize: 13, marginBottom: 10, fontWeight: 700 }}
+                  >
+                    {ev.inscrits}/{ev.capacite_max} · {ev.places_restantes}{" "}
+                    place(s) restante(s)
+                  </p>
+                  <button
+                    onClick={sInscrire}
+                    className="eh-btn eh-btn-primary eh-btn-block eh-btn-lg"
+                  >
+                    {token ? "S'inscrire" : "Se connecter pour s'inscrire"}
+                  </button>
+                </>
+              );
+            })()
           )}
 
           <p className="eh-muted" style={{ fontSize: 12.5, marginTop: 14 }}>
