@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 
 function CreerEvenement({ token, onCree }) {
-  // Les champs du formulaire
   const [titre, setTitre] = useState("");
   const [description, setDescription] = useState("");
   const [dateDebut, setDateDebut] = useState("");
@@ -9,22 +8,19 @@ function CreerEvenement({ token, onCree }) {
   const [lieu, setLieu] = useState("");
   const [capaciteMax, setCapaciteMax] = useState("");
   const [categorieId, setCategorieId] = useState("");
-
   const [categories, setCategories] = useState([]);
   const [message, setMessage] = useState("");
 
-  // Au chargement, on récupère la liste des catégories pour le menu déroulant
   useEffect(() => {
     fetch("http://localhost:8000/api/categories")
       .then((r) => r.json())
-      .then((donnees) => setCategories(donnees))
+      .then((donnees) => setCategories(Array.isArray(donnees) ? donnees : []))
       .catch(() => {});
   }, []);
 
   const creer = async (e) => {
     e.preventDefault();
     setMessage("");
-
     try {
       const reponse = await fetch("http://localhost:8000/api/evenements", {
         method: "POST",
@@ -43,95 +39,158 @@ function CreerEvenement({ token, onCree }) {
           categorie_id: parseInt(categorieId),
         }),
       });
-
       const donnees = await reponse.json();
-
       if (reponse.ok) {
         setMessage("✅ Évènement créé en brouillon (id " + donnees.id + ")");
-        if (onCree) onCree(); // prévient le parent pour rafraîchir si besoin
+        setTitre("");
+        setDescription("");
+        setDateDebut("");
+        setDateFin("");
+        setLieu("");
+        setCapaciteMax("");
+        setCategorieId("");
+        if (onCree) onCree();
       } else {
         setMessage("❌ " + (donnees.erreur || "Erreur lors de la création"));
       }
-    } catch (err) {
+    } catch {
       setMessage("Erreur de connexion au serveur");
     }
   };
 
+  const champ = { marginBottom: 16 };
+  const labelStyle = { display: "block", marginBottom: 6 };
+
   return (
-    <form
-      onSubmit={creer}
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: "0.5rem",
-        border: "1px solid #ddd",
-        borderRadius: "8px",
-        padding: "1rem",
-        marginBottom: "2rem",
-      }}
-    >
-      <h2>Créer un évènement</h2>
+    <form onSubmit={creer} className="eh-card eh-card-pad">
+      <div className="eh-eyebrow" style={{ marginBottom: 6 }}>
+        Nouvel évènement
+      </div>
+      <h2 style={{ fontSize: 22, marginBottom: 20 }}>Créer un évènement</h2>
 
-      <input
-        placeholder="Titre"
-        value={titre}
-        onChange={(e) => setTitre(e.target.value)}
-        required
-      />
-      <textarea
-        placeholder="Description"
-        value={description}
-        onChange={(e) => setDescription(e.target.value)}
-        required
-      />
+      <div style={champ}>
+        <label className="eh-label" style={labelStyle}>
+          Titre
+        </label>
+        <input
+          className="eh-input"
+          value={titre}
+          onChange={(e) => setTitre(e.target.value)}
+          required
+          placeholder="Ex : Atelier Symfony pour débutants"
+        />
+      </div>
 
-      <label>Date de début :</label>
-      <input
-        type="datetime-local"
-        value={dateDebut}
-        onChange={(e) => setDateDebut(e.target.value)}
-        required
-      />
+      <div style={champ}>
+        <label className="eh-label" style={labelStyle}>
+          Description
+        </label>
+        <textarea
+          className="eh-textarea"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          required
+          placeholder="Décrivez votre évènement…"
+        />
+      </div>
 
-      <label>Date de fin :</label>
-      <input
-        type="datetime-local"
-        value={dateFin}
-        onChange={(e) => setDateFin(e.target.value)}
-        required
-      />
-
-      <input
-        placeholder="Lieu"
-        value={lieu}
-        onChange={(e) => setLieu(e.target.value)}
-        required
-      />
-      <input
-        type="number"
-        placeholder="Capacité max"
-        value={capaciteMax}
-        onChange={(e) => setCapaciteMax(e.target.value)}
-        required
-      />
-
-      <label>Catégorie :</label>
-      <select
-        value={categorieId}
-        onChange={(e) => setCategorieId(e.target.value)}
-        required
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gap: 14,
+          ...champ,
+        }}
       >
-        <option value="">-- Choisir --</option>
-        {categories.map((cat) => (
-          <option key={cat.id} value={cat.id}>
-            {cat.nom}
-          </option>
-        ))}
-      </select>
+        <div>
+          <label className="eh-label" style={labelStyle}>
+            Date de début
+          </label>
+          <input
+            type="datetime-local"
+            className="eh-input"
+            value={dateDebut}
+            onChange={(e) => setDateDebut(e.target.value)}
+            required
+          />
+        </div>
+        <div>
+          <label className="eh-label" style={labelStyle}>
+            Date de fin
+          </label>
+          <input
+            type="datetime-local"
+            className="eh-input"
+            value={dateFin}
+            onChange={(e) => setDateFin(e.target.value)}
+            required
+          />
+        </div>
+      </div>
 
-      <button type="submit">Créer</button>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "2fr 1fr",
+          gap: 14,
+          ...champ,
+        }}
+      >
+        <div>
+          <label className="eh-label" style={labelStyle}>
+            Lieu
+          </label>
+          <input
+            className="eh-input"
+            value={lieu}
+            onChange={(e) => setLieu(e.target.value)}
+            required
+            placeholder="Ex : Espace Coworking"
+          />
+        </div>
+        <div>
+          <label className="eh-label" style={labelStyle}>
+            Capacité max
+          </label>
+          <input
+            type="number"
+            className="eh-input"
+            value={capaciteMax}
+            onChange={(e) => setCapaciteMax(e.target.value)}
+            required
+            placeholder="30"
+          />
+        </div>
+      </div>
 
-      {message && <p>{message}</p>}
+      <div style={{ marginBottom: 22 }}>
+        <label className="eh-label" style={labelStyle}>
+          Catégorie
+        </label>
+        <select
+          className="eh-select"
+          value={categorieId}
+          onChange={(e) => setCategorieId(e.target.value)}
+          required
+        >
+          <option value="">-- Choisir --</option>
+          {categories.map((cat) => (
+            <option key={cat.id} value={cat.id}>
+              {cat.nom}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <button type="submit" className="eh-btn eh-btn-primary eh-btn-block">
+        Créer l'évènement
+      </button>
+
+      {message && (
+        <p className="eh-muted" style={{ marginTop: 14, textAlign: "center" }}>
+          {message}
+        </p>
+      )}
     </form>
   );
 }
