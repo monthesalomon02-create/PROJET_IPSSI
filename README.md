@@ -157,4 +157,4 @@ La suite comprend des **tests unitaires** (logique des entités) et des **tests 
 
 ## Auteur
 
-Projet réalisé par **Freddy Nanji** et **Monthe Salomon** — Titre professionnel Concepteur Développeur d'Applications.
+Projet réalisé par **Monthe Salomon** — Titre professionnel Concepteur Développeur d'Applications.
