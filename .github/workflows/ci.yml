@@ -1,0 +1,61 @@
+name: CI
+
+# Déclenche la CI à chaque push et chaque pull request
+on:
+  push:
+  pull_request:
+
+jobs:
+  tests-backend:
+    runs-on: ubuntu-latest
+
+    # On démarre une base MySQL pour les tests
+    services:
+      database:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: evenements_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      # 1. Récupérer le code
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+
+      # 2. Installer PHP avec les extensions nécessaires
+      - name: Installer PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: pdo_mysql, intl, zip
+
+      # 3. Installer les dépendances Composer (dans backend/)
+      - name: Installer les dépendances
+        working-directory: ./backend
+        run: composer install --no-interaction --prefer-dist
+
+      # 4. Générer les clés JWT (nécessaires au démarrage de l'app)
+      - name: Générer les clés JWT
+        working-directory: ./backend
+        run: php bin/console lexik:jwt:generate-keypair --skip-if-exists
+
+      # 5. Créer les tables dans la base de test
+      - name: Préparer la base de test
+        working-directory: ./backend
+        env:
+          DATABASE_URL: "mysql://root:root@127.0.0.1:3306/evenements?serverVersion=8.0"
+        run: php bin/console doctrine:migrations:migrate --env=test --no-interaction
+
+      # 6. Lancer les tests
+      - name: Lancer PHPUnit
+        working-directory: ./backend
+        env:
+          DATABASE_URL: "mysql://root:root@127.0.0.1:3306/evenements?serverVersion=8.0"
+        run: php bin/phpunit
