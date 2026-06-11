@@ -99,7 +99,8 @@ class AppFixtures extends Fixture
             ['Design Systems : industrialiser ses composants', 'Comment passer d\'une librairie de composants à un véritable design system adopté par toutes les équipes.', 35, 3, 'Le Tubé', '15 Rue du Griffon, 69001 Lyon', 60, '15', 1, 'publie', 23],
             ['Meetup Rust — vers la performance sans peur', 'Découverte de Rust pour les développeurs venus d\'autres horizons. Ownership, borrow checker et live coding.', 40, 2, 'La Commune', '46 Rue Saint-Antoine, 69003 Lyon', 70, '0', 2, 'publie', 12],
             ['Table ronde : l\'avenir du télétravail dans la tech', 'Quatre intervenants débattent des nouveaux modèles d\'organisation du travail dans les entreprises tech.', 45, 2, 'WeWork Part-Dieu', '52 Quai Rambaud, 69002 Lyon', 80, '0', 4, 'publie', 35],
-
+            ['Atelier UX — places limitées', 'Atelier intimiste en très petit groupe sur les fondamentaux de l\'expérience utilisateur. Inscriptions closes une fois la salle pleine.', 15, 3, 'Le Tubé', '15 Rue du Griffon, 69001 Lyon', 10, '0', 1, 'publie', 10],
+            
             // --- PUBLIÉS PASSÉS (pour tester "Terminé") ---
             ['Introduction au Machine Learning', 'Une demi-journée pour comprendre les fondamentaux du ML : régression, classification, et premiers modèles.', -20, 4, 'Campus Numérique', '12 Rue des Serruriers, 69002 Lyon', 50, '10', 0, 'publie', 48],
             ['Meetup PHP — les nouveautés de la 8.3', 'Tour d\'horizon des nouveautés de PHP 8.3 et retours d\'expérience sur la migration.', -10, 2, 'La Commune', '46 Rue Saint-Antoine, 69003 Lyon', 60, '0', 2, 'publie', 40],
