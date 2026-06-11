@@ -41,7 +41,7 @@ function formatDate(s) {
   };
 }
 
-function MesEvenements({ token }) {
+function MesEvenements({ token, onModifier }) {
   const [evenements, setEvenements] = useState([]);
   const [message, setMessage] = useState("");
   const [filtre, setFiltre] = useState("tous");
@@ -250,14 +250,22 @@ function MesEvenements({ token }) {
                   )}
                 </div>
 
-                {(ev.statut === "brouillon" || ev.statut === "refuse") && (
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                   <button
-                    onClick={() => soumettre(ev.id)}
-                    className="eh-btn eh-btn-primary eh-btn-sm"
+                    onClick={() => onModifier(ev)}
+                    className="eh-btn eh-btn-ghost eh-btn-sm"
                   >
-                    ➤ Soumettre
+                    ✏️ Modifier
                   </button>
-                )}
+                  {(ev.statut === "brouillon" || ev.statut === "refuse") && (
+                    <button
+                      onClick={() => soumettre(ev.id)}
+                      className="eh-btn eh-btn-primary eh-btn-sm"
+                    >
+                      ➤ Soumettre
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           );

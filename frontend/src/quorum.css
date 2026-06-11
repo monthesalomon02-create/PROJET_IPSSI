@@ -579,3 +579,9 @@ h5 {
     display: none !important;
   }
 }
+
+@media (max-width: 860px) {
+  .eh-create-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
