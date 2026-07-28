@@ -7,6 +7,8 @@ use App\Entity\Inscription;
 use App\Entity\Utilisateur;
 use App\Repository\InscriptionRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
 
@@ -16,6 +18,7 @@ class InscriptionService
         private readonly EntityManagerInterface $em,
         private readonly InscriptionRepository $inscriptionRepository,
         private readonly MailerInterface $mailer,
+        private readonly LoggerInterface $logger,
     ) {
     }
 
@@ -78,6 +81,9 @@ class InscriptionService
         $this->em->flush();
     }
 
+    // L'inscription elle-même est déjà actée (persistée) avant cet appel : un envoi
+    // d'email qui échoue (SMTP mal configuré, service indisponible...) ne doit jamais
+    // faire échouer l'inscription en retournant une erreur 500 à l'utilisateur.
     private function envoyerEmailConfirmation(Evenement $evenement, Utilisateur $utilisateur): void
     {
         $email = (new Email())
@@ -92,6 +98,14 @@ class InscriptionService
                 "À bientôt !"
             );
 
-        $this->mailer->send($email);
+        try {
+            $this->mailer->send($email);
+        } catch (TransportExceptionInterface $e) {
+            $this->logger->error('Échec de l\'envoi de l\'email de confirmation d\'inscription', [
+                'evenement_id' => $evenement->getId(),
+                'utilisateur_id' => $utilisateur->getId(),
+                'erreur' => $e->getMessage(),
+            ]);
+        }
     }
 }
