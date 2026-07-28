@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Evenement;
 use App\Repository\EvenementRepository;
 use App\Service\EvenementService;
+use App\Service\MeteoService;
 use App\Service\ServiceException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -14,6 +15,19 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 class EvenementController extends AbstractController
 {
+    // Un évènement non publié n'est visible que de son organisateur ou d'un admin
+    private function peutVoir(Evenement $evenement): bool
+    {
+        if ($evenement->getStatut() === 'publie') {
+            return true;
+        }
+
+        $utilisateur = $this->getUser();
+
+        return ($utilisateur && $evenement->getOrganisateur() === $utilisateur)
+            || ($utilisateur && in_array('ROLE_ADMIN', $utilisateur->getRoles()));
+    }
+
     // READ — liste de tous les évènements
     #[Route('/api/evenements', name: 'api_evenements_list', methods: ['GET'])]
     public function list(EvenementRepository $evenementRepository, EvenementService $service): JsonResponse
@@ -34,19 +48,34 @@ class EvenementController extends AbstractController
             return $this->json(['erreur' => 'Évènement introuvable'], 404);
         }
 
-        // Si l'évènement n'est pas publié, seul le propriétaire ou un admin peut le voir
-        if ($evenement->getStatut() !== 'publie') {
-            $utilisateur = $this->getUser();
-            $estProprietaire = $utilisateur && $evenement->getOrganisateur() === $utilisateur;
-            $estAdmin = $utilisateur && in_array('ROLE_ADMIN', $utilisateur->getRoles());
-
-            if (!$estProprietaire && !$estAdmin) {
-                // On renvoie 404 (et non 403) pour ne pas révéler l'existence du brouillon
-                return $this->json(['erreur' => 'Évènement introuvable'], 404);
-            }
+        // On renvoie 404 (et non 403) pour ne pas révéler l'existence d'un brouillon
+        if (!$this->peutVoir($evenement)) {
+            return $this->json(['erreur' => 'Évènement introuvable'], 404);
         }
 
         return $this->json($service->serialize($evenement));
+    }
+
+    // Prévision météo pour la date/lieu de l'évènement (API externe OpenWeatherMap)
+    #[Route('/api/evenements/{id}/meteo', name: 'api_evenements_meteo', methods: ['GET'])]
+    public function meteo(?Evenement $evenement, MeteoService $meteoService): JsonResponse
+    {
+        if (!$evenement) {
+            return $this->json(['erreur' => 'Évènement introuvable'], 404);
+        }
+
+        if (!$this->peutVoir($evenement)) {
+            return $this->json(['erreur' => 'Évènement introuvable'], 404);
+        }
+
+        $lieu = $evenement->getAdresse() ?: $evenement->getLieu();
+        $prevision = $meteoService->previsionPour($lieu, $evenement->getDateDebut());
+
+        if (!$prevision) {
+            return $this->json(['disponible' => false]);
+        }
+
+        return $this->json(['disponible' => true] + $prevision);
     }
 
     // CREATE — créer un évènement

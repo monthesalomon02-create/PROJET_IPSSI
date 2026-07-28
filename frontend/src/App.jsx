@@ -34,9 +34,9 @@ function App() {
   });
 
   // À chaque changement de token, on vérifie le rôle de l'utilisateur
+  // (la réinitialisation à la déconnexion est déjà gérée par seDeconnecter/configurerExpiration)
   useEffect(() => {
     if (!token) {
-      setEstAdmin(false);
       return;
     }
     apiFetch("/api/me")
