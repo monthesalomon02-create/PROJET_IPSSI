@@ -155,13 +155,19 @@ L'application suit une architecture **client-serveur découplée** : un front-en
 
 ## Tests
 
-Les tests s'exécutent dans le conteneur PHP, sur une base de données dédiée et isolée :
+**Back-end** — les tests s'exécutent dans le conteneur PHP, sur une base de données dédiée et isolée (aucune fixture n'y est chargée, chaque test crée ses propres données) :
 
 ```bash
 docker compose exec php php bin/phpunit
 ```
 
-La suite comprend des **tests unitaires** (logique des entités) et des **tests fonctionnels** (routes de l'API, contrôle des accès).
+La suite comprend des **tests unitaires** (logique des entités), des **tests fonctionnels** (workflow de validation des évènements, inscriptions, RGPD, contrôle des accès) ainsi que des tests de **sécurité** (injection d'un payload `<script>`) et de **performance** (temps de réponse).
+
+**Front-end** — tests de composants et de parcours utilisateur (Vitest + Testing Library) :
+
+```bash
+docker compose exec frontend npm run test
+```
 
 ---
 
@@ -169,8 +175,8 @@ La suite comprend des **tests unitaires** (logique des entités) et des **tests 
 
 À chaque `push`, [GitHub Actions](https://github.com/Leroy020699/PROJET_IPSSI/actions) exécute trois jobs :
 
-- `tests-backend` : recrée un environnement neuf, monte une base MySQL temporaire, applique les migrations et exécute la suite PHPUnit.
-- `tests-frontend` : installe les dépendances npm, lance ESLint puis un build Vite.
+- `tests-backend` : recrée un environnement neuf, monte une base MySQL temporaire, applique les migrations, vérifie le style de code (PSR-12 via PHP CS Fixer) et exécute la suite PHPUnit.
+- `tests-frontend` : installe les dépendances npm, lance ESLint, exécute la suite de tests (Vitest + Testing Library) puis un build Vite.
 - `build-docker` (après succès des deux jobs précédents) : construit les images Docker backend et frontend, pour prouver que l'application se package correctement.
 
 Un commit n'est validé que si tous les jobs passent.
