@@ -3,45 +3,32 @@
 namespace App\Controller;
 
 use App\Entity\Evenement;
-use App\Repository\CategorieRepository;
 use App\Repository\EvenementRepository;
-use Doctrine\ORM\EntityManagerInterface;
+use App\Service\EvenementService;
+use App\Service\ServiceException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
-use Symfony\Component\Validator\ConstraintViolationListInterface;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class EvenementController extends AbstractController
 {
-    // Regroupe les messages de violation en un tableau de chaînes
-    private function erreursValidation(ConstraintViolationListInterface $violations): array
-    {
-        $erreurs = [];
-        foreach ($violations as $violation) {
-            $erreurs[] = $violation->getMessage();
-        }
-
-        return $erreurs;
-    }
-
     // READ — liste de tous les évènements
     #[Route('/api/evenements', name: 'api_evenements_list', methods: ['GET'])]
-    public function list(EvenementRepository $evenementRepository): JsonResponse
+    public function list(EvenementRepository $evenementRepository, EvenementService $service): JsonResponse
     {
-        $data = [];
-        foreach ($evenementRepository->findPublies() as $evenement) {
-            $data[] = $this->serialize($evenement);
-        }
+        $data = array_map(
+            fn (Evenement $e) => $service->serialize($e),
+            $evenementRepository->findPublies()
+        );
 
         return $this->json($data);
     }
 
     // READ — un seul évènement (publié = public ; brouillon = propriétaire/admin seulement)
     #[Route('/api/evenements/{id}', name: 'api_evenements_show', methods: ['GET'])]
-    public function show(?Evenement $evenement): JsonResponse
+    public function show(?Evenement $evenement, EvenementService $service): JsonResponse
     {
         if (!$evenement) {
             return $this->json(['erreur' => 'Évènement introuvable'], 404);
@@ -59,114 +46,63 @@ class EvenementController extends AbstractController
             }
         }
 
-        return $this->json($this->serialize($evenement));
+        return $this->json($service->serialize($evenement));
     }
 
     // CREATE — créer un évènement
     #[Route('/api/evenements', name: 'api_evenements_create', methods: ['POST'])]
     #[IsGranted('ROLE_USER')]
-    public function create(
-        Request $request,
-        EntityManagerInterface $em,
-        CategorieRepository $categorieRepository,
-        ValidatorInterface $validator
-    ): JsonResponse {
-        $donnees = json_decode($request->getContent(), true);
+    public function create(Request $request, EvenementService $service): JsonResponse
+    {
+        $donnees = json_decode($request->getContent(), true) ?? [];
 
-        // On récupère la catégorie à partir de l'id envoyé
-        $categorie = $categorieRepository->find($donnees['categorie_id'] ?? 0);
-        if (!$categorie) {
-            return $this->json(['erreur' => 'Catégorie introuvable'], 400);
+        try {
+            $evenement = $service->creer($donnees, $this->getUser());
+        } catch (ServiceException $e) {
+            return $this->json(['erreur' => $e->getMessage()], $e->getStatusCode());
         }
 
-        $evenement = new Evenement();
-        $evenement->setTitre($donnees['titre'] ?? '');
-        $evenement->setDescription($donnees['description'] ?? '');
-        $evenement->setDateDebut(new \DateTime($donnees['date_debut']));
-        $evenement->setDateFin(new \DateTime($donnees['date_fin']));
-        $evenement->setLieu($donnees['lieu'] ?? '');
-        $evenement->setAdresse($donnees['adresse'] ?? null);
-        $evenement->setCapaciteMax($donnees['capacite_max'] ?? 0);
-        $evenement->setPrix($donnees['prix'] ?? '0');
-        $evenement->setImage($donnees['image'] ?? null);
-        $evenement->setStatut('brouillon');           // tout évènement naît en brouillon
-        $evenement->setDateCreation(new \DateTime());  // date du jour, automatique
-        $evenement->setCategorie($categorie);
-        $evenement->setOrganisateur($this->getUser());
-
-        $violations = $validator->validate($evenement);
-        if (count($violations) > 0) {
-            return $this->json(['erreur' => implode(' ', $this->erreursValidation($violations))], 400);
-        }
-
-        $em->persist($evenement);
-        $em->flush();
-
-        return $this->json($this->serialize($evenement), 201);
+        return $this->json($service->serialize($evenement), 201);
     }
 
     // UPDATE — modifier un évènement
     #[Route('/api/evenements/{id}', name: 'api_evenements_update', methods: ['PUT'])]
-    public function update(
-        ?Evenement $evenement,
-        Request $request,
-        EntityManagerInterface $em,
-        CategorieRepository $categorieRepository,
-        ValidatorInterface $validator
-    ): JsonResponse {
+    public function update(?Evenement $evenement, Request $request, EvenementService $service): JsonResponse
+    {
         if (!$evenement) {
             return $this->json(['erreur' => 'Évènement introuvable'], 404);
         }
 
         $this->denyAccessUnlessGranted(\App\Security\Voter\EvenementVoter::EDIT, $evenement);
 
-        $donnees = json_decode($request->getContent(), true);
+        $donnees = json_decode($request->getContent(), true) ?? [];
 
-        if (isset($donnees['titre']))        { $evenement->setTitre($donnees['titre']); }
-        if (isset($donnees['description']))  { $evenement->setDescription($donnees['description']); }
-        if (isset($donnees['date_debut']))   { $evenement->setDateDebut(new \DateTime($donnees['date_debut'])); }
-        if (isset($donnees['date_fin']))     { $evenement->setDateFin(new \DateTime($donnees['date_fin'])); }
-        if (isset($donnees['lieu']))         { $evenement->setLieu($donnees['lieu']); }
-        if (isset($donnees['adresse']))      { $evenement->setAdresse($donnees['adresse']); }
-        if (isset($donnees['capacite_max'])) { $evenement->setCapaciteMax($donnees['capacite_max']); }
-        if (isset($donnees['prix']))         { $evenement->setPrix($donnees['prix']); }
-        if (isset($donnees['image']))        { $evenement->setImage($donnees['image']); }
-
-        if (isset($donnees['categorie_id'])) {
-            $categorie = $categorieRepository->find($donnees['categorie_id']);
-            if ($categorie) {
-                $evenement->setCategorie($categorie);
-            }
+        try {
+            $evenement = $service->modifier($evenement, $donnees);
+        } catch (ServiceException $e) {
+            return $this->json(['erreur' => $e->getMessage()], $e->getStatusCode());
         }
 
-        $violations = $validator->validate($evenement);
-        if (count($violations) > 0) {
-            return $this->json(['erreur' => implode(' ', $this->erreursValidation($violations))], 400);
-        }
-
-        $em->flush();
-
-        return $this->json($this->serialize($evenement));
+        return $this->json($service->serialize($evenement));
     }
 
     // DELETE — supprimer un évènement
     #[Route('/api/evenements/{id}', name: 'api_evenements_delete', methods: ['DELETE'])]
-    public function delete(?Evenement $evenement, EntityManagerInterface $em): JsonResponse
+    public function delete(?Evenement $evenement, EvenementService $service): JsonResponse
     {
         if (!$evenement) {
             return $this->json(['erreur' => 'Évènement introuvable'], 404);
         }
         $this->denyAccessUnlessGranted(\App\Security\Voter\EvenementVoter::DELETE, $evenement);
 
-        $em->remove($evenement);
-        $em->flush();
+        $service->supprimer($evenement);
 
         return $this->json(['message' => 'Évènement supprimé']);
     }
 
     // L'organisateur soumet son évènement pour validation
     #[Route('/api/evenements/{id}/soumettre', name: 'api_evenements_soumettre', methods: ['PATCH'])]
-    public function soumettre(?Evenement $evenement, EntityManagerInterface $em): JsonResponse
+    public function soumettre(?Evenement $evenement, EvenementService $service): JsonResponse
     {
         if (!$evenement) {
             return $this->json(['erreur' => 'Évènement introuvable'], 404);
@@ -175,88 +111,64 @@ class EvenementController extends AbstractController
         // Seul le propriétaire (ou un admin) peut soumettre — on réutilise le Voter
         $this->denyAccessUnlessGranted(\App\Security\Voter\EvenementVoter::EDIT, $evenement);
 
-        // On ne peut soumettre que depuis "brouillon" ou "refuse"
-        if (!in_array($evenement->getStatut(), ['brouillon', 'refuse'])) {
-            return $this->json([
-                'erreur' => 'Seul un évènement en brouillon ou refusé peut être soumis (statut actuel : ' . $evenement->getStatut() . ')'
-            ], 409);
+        try {
+            $evenement = $service->soumettre($evenement);
+        } catch (ServiceException $e) {
+            return $this->json(['erreur' => $e->getMessage()], $e->getStatusCode());
         }
 
-        $evenement->setStatut('en_attente');
-        $evenement->setDateSoumission(new \DateTime());
-        $evenement->setMotifRefus(null); // on efface un éventuel ancien motif de refus
-
-        $em->flush();
-
-        return $this->json($this->serialize($evenement));
+        return $this->json($service->serialize($evenement));
     }
 
     // L'admin approuve un évènement en attente → il est publié
     #[Route('/api/evenements/{id}/approuver', name: 'api_evenements_approuver', methods: ['PATCH'])]
     #[IsGranted('ROLE_ADMIN')]
-    public function approuver(?Evenement $evenement, EntityManagerInterface $em): JsonResponse
+    public function approuver(?Evenement $evenement, EvenementService $service): JsonResponse
     {
         if (!$evenement) {
             return $this->json(['erreur' => 'Évènement introuvable'], 404);
         }
 
-        if ($evenement->getStatut() !== 'en_attente') {
-            return $this->json([
-                'erreur' => 'Seul un évènement en attente peut être approuvé (statut actuel : ' . $evenement->getStatut() . ')'
-            ], 409);
+        try {
+            $evenement = $service->approuver($evenement);
+        } catch (ServiceException $e) {
+            return $this->json(['erreur' => $e->getMessage()], $e->getStatusCode());
         }
 
-        $evenement->setStatut('publie');
-        $evenement->setDateValidation(new \DateTime());
-        $evenement->setMotifRefus(null);
-
-        $em->flush();
-
-        return $this->json($this->serialize($evenement));
+        return $this->json($service->serialize($evenement));
     }
 
     // L'admin refuse un évènement en attente → il est refusé, avec un motif
     #[Route('/api/evenements/{id}/refuser', name: 'api_evenements_refuser', methods: ['PATCH'])]
     #[IsGranted('ROLE_ADMIN')]
-    public function refuser(?Evenement $evenement, Request $request, EntityManagerInterface $em): JsonResponse
+    public function refuser(?Evenement $evenement, Request $request, EvenementService $service): JsonResponse
     {
         if (!$evenement) {
             return $this->json(['erreur' => 'Évènement introuvable'], 404);
         }
 
-        if ($evenement->getStatut() !== 'en_attente') {
-            return $this->json([
-                'erreur' => 'Seul un évènement en attente peut être refusé (statut actuel : ' . $evenement->getStatut() . ')'
-            ], 409);
+        $donnees = json_decode($request->getContent(), true) ?? [];
+
+        try {
+            $evenement = $service->refuser($evenement, $donnees['motif'] ?? null);
+        } catch (ServiceException $e) {
+            return $this->json(['erreur' => $e->getMessage()], $e->getStatusCode());
         }
 
-        $donnees = json_decode($request->getContent(), true);
-        $motif = $donnees['motif'] ?? null;
-
-        if (empty($motif)) {
-            return $this->json(['erreur' => 'Un motif de refus est obligatoire'], 400);
-        }
-
-        $evenement->setStatut('refuse');
-        $evenement->setMotifRefus($motif);
-        $evenement->setDateValidation(new \DateTime());
-
-        $em->flush();
-
-        return $this->json($this->serialize($evenement));
+        return $this->json($service->serialize($evenement));
     }
 
     // Les évènements de l'organisateur connecté
     #[Route('/api/mes-evenements', name: 'api_mes_evenements', methods: ['GET'])]
     #[IsGranted('ROLE_USER')]
-    public function mesEvenements(EvenementRepository $evenementRepository): JsonResponse
+    public function mesEvenements(EvenementRepository $evenementRepository, EvenementService $service): JsonResponse
     {
-        $data = [];
         /** @var \App\Entity\Utilisateur $utilisateur */
         $utilisateur = $this->getUser();
-        foreach ($evenementRepository->findByOrganisateur($utilisateur->getId()) as $evenement) {
-            $data[] = $this->serialize($evenement);
-        }
+        $data = array_map(
+            fn (Evenement $e) => $service->serialize($e),
+            $evenementRepository->findByOrganisateur($utilisateur->getId())
+        );
 
         return $this->json($data);
     }
@@ -264,52 +176,13 @@ class EvenementController extends AbstractController
     // La file des évènements en attente de validation (admin)
     #[Route('/api/admin/file-attente', name: 'api_admin_file_attente', methods: ['GET'])]
     #[IsGranted('ROLE_ADMIN')]
-    public function fileAttente(EvenementRepository $evenementRepository): JsonResponse
+    public function fileAttente(EvenementRepository $evenementRepository, EvenementService $service): JsonResponse
     {
-        $data = [];
-        foreach ($evenementRepository->findEnAttente() as $evenement) {
-            $data[] = $this->serialize($evenement);
-        }
+        $data = array_map(
+            fn (Evenement $e) => $service->serialize($e),
+            $evenementRepository->findEnAttente()
+        );
 
         return $this->json($data);
-    }
-
-    // Transformation d'un Evenement en tableau pour le JSON
-    private function serialize(Evenement $evenement): array
-    {
-        // Compter les inscriptions confirmées
-        $nbInscrits = 0;
-        foreach ($evenement->getInscriptions() as $inscription) {
-            if ($inscription->getStatut() === 'confirmee') {
-                $nbInscrits++;
-            }
-        }
-
-        return [
-            'id' => $evenement->getId(),
-            'titre' => $evenement->getTitre(),
-            'description' => $evenement->getDescription(),
-            'date_debut' => $evenement->getDateDebut()?->format('Y-m-d H:i'),
-            'date_fin' => $evenement->getDateFin()?->format('Y-m-d H:i'),
-            'lieu' => $evenement->getLieu(),
-            'adresse' => $evenement->getAdresse(),
-            'capacite_max' => $evenement->getCapaciteMax(),
-            'prix' => $evenement->getPrix(),
-            'image' => $evenement->getImage(),
-            'statut' => $evenement->getStatut(),
-            'motif_refus' => $evenement->getMotifRefus(),
-            'date_soumission' => $evenement->getDateSoumission()?->format('Y-m-d H:i'),
-            'inscrits' => $nbInscrits,
-            'places_restantes' => max(0, $evenement->getCapaciteMax() - $nbInscrits),
-            'complet' => $nbInscrits >= $evenement->getCapaciteMax(),
-            'categorie' => [
-                'id' => $evenement->getCategorie()->getId(),
-                'nom' => $evenement->getCategorie()->getNom(),
-            ],
-            'organisateur' => [
-                'id' => $evenement->getOrganisateur()->getId(),
-                'email' => $evenement->getOrganisateur()->getEmail(),
-            ],
-        ];
     }
 }
