@@ -42,7 +42,7 @@ function formatDate(s) {
   };
 }
 
-function MesEvenements({ token, onModifier }) {
+function MesEvenements({ onModifier }) {
   const [evenements, setEvenements] = useState([]);
   const [message, setMessage] = useState("");
   const [filtre, setFiltre] = useState("tous");

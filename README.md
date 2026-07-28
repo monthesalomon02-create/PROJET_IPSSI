@@ -16,6 +16,8 @@ Elle permet à des organisateurs de créer des évènements, à un administrateu
 - [Architecture du projet](#architecture-du-projet)
 - [Tests](#tests)
 - [Intégration continue](#intégration-continue)
+- [Contrôle de version](#contrôle-de-version)
+- [Confidentialité et RGPD](#confidentialité-et-rgpd)
 
 ---
 
@@ -27,6 +29,9 @@ Elle permet à des organisateurs de créer des évènements, à un administrateu
 | Front-end            | React 18 + Vite                    |
 | Base de données      | MySQL 8                            |
 | Authentification     | JWT (LexikJWTAuthenticationBundle) |
+| Validation           | Symfony Validator                  |
+| Sécurité             | Rate limiting sur la connexion (brute-force) |
+| API externe          | OpenWeatherMap (météo des évènements) |
 | Conteneurisation     | Docker / Docker Compose            |
 | Tests                | PHPUnit                            |
 | Intégration continue | GitHub Actions                     |
@@ -73,7 +78,17 @@ cp backend/.env.local.example backend/.env.local
 
 Puis éditez `backend/.env.local` avec votre DSN (ex. [Mailtrap](https://mailtrap.io/) pour les tests). Sans cette configuration, l'application fonctionne ; seul l'envoi d'email échouera silencieusement.
 
-### 3. Lancer le projet
+### 3. Configurer la météo des évènements (optionnel)
+
+La page de détail d'un évènement affiche, si possible, la météo prévue à la date et au lieu de l'évènement, via l'API externe [OpenWeatherMap](https://openweathermap.org/api). Ajoutez votre clé (gratuite) dans `backend/.env.local` :
+
+```
+OPENWEATHER_API_KEY=votre_cle_api
+```
+
+Sans clé, ou si l'évènement est à plus de 5 jours (limite de l'offre gratuite), la carte météo ne s'affiche simplement pas — aucune erreur.
+
+### 4. Lancer le projet
 
 ```bash
 docker compose up --build
@@ -90,7 +105,7 @@ C'est tout. Au **premier démarrage**, le projet réalise automatiquement :
 
 Les démarrages suivants **préservent les données** existantes.
 
-### 4. Accéder à l'application
+### 5. Accéder à l'application
 
 - **Front-end** : http://localhost:5173
 - **API back-end** : http://localhost:8000
@@ -117,7 +132,8 @@ Des évènements variés (publiés, passés, en attente de validation, brouillon
 .
 ├── backend/                # API REST Symfony
 │   ├── src/
-│   │   ├── Controller/      # Points d'entrée de l'API
+│   │   ├── Controller/      # Points d'entrée de l'API (fins, délèguent aux Services)
+│   │   ├── Service/         # Logique métier (workflow évènements, inscriptions, météo)
 │   │   ├── Entity/          # Entités Doctrine (Utilisateur, Evenement, Categorie, Inscription)
 │   │   ├── Repository/      # Requêtes personnalisées
 │   │   ├── Security/        # Voter (droits sur les évènements)
@@ -151,7 +167,33 @@ La suite comprend des **tests unitaires** (logique des entités) et des **tests 
 
 ## Intégration continue
 
-À chaque `push`, [GitHub Actions](https://github.com/Leroy020699/PROJET_IPSSI/actions) recrée un environnement neuf, monte une base MySQL temporaire, applique les migrations et exécute la suite de tests. Un commit n'est validé que si tous les tests passent.
+À chaque `push`, [GitHub Actions](https://github.com/Leroy020699/PROJET_IPSSI/actions) exécute trois jobs :
+
+- `tests-backend` : recrée un environnement neuf, monte une base MySQL temporaire, applique les migrations et exécute la suite PHPUnit.
+- `tests-frontend` : installe les dépendances npm, lance ESLint puis un build Vite.
+- `build-docker` (après succès des deux jobs précédents) : construit les images Docker backend et frontend, pour prouver que l'application se package correctement.
+
+Un commit n'est validé que si tous les jobs passent.
+
+---
+
+## Contrôle de version
+
+Le dépôt suit une organisation de branches simplifiée :
+
+- `main` — versions stables, correspondant aux livrables de jalon.
+- `develop` — branche d'intégration où convergent les fonctionnalités en cours.
+- des branches `feature/...` pour chaque fonctionnalité, fusionnées dans `develop` via pull request.
+
+---
+
+## Confidentialité et RGPD
+
+EventHub manipule des données personnelles (nom, prénom, email). Conformément au RGPD :
+
+- Les mots de passe sont hachés (jamais stockés en clair) via l'algorithme par défaut de Symfony (bcrypt/argon2).
+- Une [politique de confidentialité](frontend/src/pages/Confidentialite.jsx) simplifiée est accessible depuis la barre de navigation (`/confidentialite`), même si EventHub reste une plateforme fictive dans le cadre de ce projet.
+- Chaque utilisateur peut demander la suppression de ses données personnelles depuis son espace organisateur (« Zone dangereuse » → « Supprimer mon compte »). Le compte est **anonymisé** plutôt que supprimé physiquement — nom, prénom et email sont écrasés et le mot de passe est invalidé — car ses évènements et inscriptions existants (clés étrangères non nullables) doivent être conservés pour ne pas casser les données des autres utilisateurs (places restantes, historique).
 
 ---
 

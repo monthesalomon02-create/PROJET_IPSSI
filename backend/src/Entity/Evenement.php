@@ -7,8 +7,11 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 #[ORM\Entity(repositoryClass: EvenementRepository::class)]
+#[Assert\Callback('validerDates')]
 class Evenement
 {
     #[ORM\Id]
@@ -17,27 +20,36 @@ class Evenement
     private ?int $id = null;
 
     #[ORM\Column(length: 180)]
+    #[Assert\NotBlank]
+    #[Assert\Length(max: 180)]
     private ?string $titre = null;
 
     #[ORM\Column(type: Types::TEXT)]
+    #[Assert\NotBlank]
     private ?string $description = null;
 
     #[ORM\Column]
+    #[Assert\NotNull]
     private ?\DateTime $dateDebut = null;
 
     #[ORM\Column]
+    #[Assert\NotNull]
     private ?\DateTime $dateFin = null;
 
     #[ORM\Column(length: 180)]
+    #[Assert\NotBlank]
+    #[Assert\Length(max: 180)]
     private ?string $lieu = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $adresse = null;
 
     #[ORM\Column]
+    #[Assert\Positive]
     private ?int $capaciteMax = null;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 8, scale: 2)]
+    #[Assert\PositiveOrZero]
     private ?string $prix = null;
 
     #[ORM\Column(length: 255, nullable: true)]
@@ -75,6 +87,15 @@ class Evenement
     public function __construct()
     {
         $this->inscriptions = new ArrayCollection();
+    }
+
+    public function validerDates(ExecutionContextInterface $context): void
+    {
+        if ($this->dateDebut && $this->dateFin && $this->dateFin <= $this->dateDebut) {
+            $context->buildViolation('La date de fin doit être postérieure à la date de début.')
+                ->atPath('dateFin')
+                ->addViolation();
+        }
     }
 
     public function getId(): ?int

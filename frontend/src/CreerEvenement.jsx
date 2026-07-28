@@ -27,7 +27,7 @@ function pourInput(s) {
   return String(s).replace(" ", "T").slice(0, 16);
 }
 
-function CreerEvenement({ token, onCree, evenementAEditer }) {
+function CreerEvenement({ onCree, evenementAEditer }) {
   const enEdition = Boolean(evenementAEditer);
 
   const [titre, setTitre] = useState(evenementAEditer?.titre || "");

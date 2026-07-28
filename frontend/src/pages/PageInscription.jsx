@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { apiFetch } from "../api";
 
 function PageInscription() {
   const [email, setEmail] = useState("");
@@ -14,7 +15,7 @@ function PageInscription() {
     e.preventDefault();
     setMessage("");
     try {
-      const reponse = await fetch("http://localhost:8000/api/inscription", {
+      const reponse = await apiFetch("/api/inscription", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password, nom, prenom }),

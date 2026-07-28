@@ -10,9 +10,21 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class CategorieController extends AbstractController
 {
+    // Regroupe les messages de violation en un tableau de chaînes
+    private function erreursValidation(\Symfony\Component\Validator\ConstraintViolationListInterface $violations): array
+    {
+        $erreurs = [];
+        foreach ($violations as $violation) {
+            $erreurs[] = $violation->getMessage();
+        }
+
+        return $erreurs;
+    }
+
     // READ — liste de toutes les catégories
     #[Route('/api/categories', name: 'api_categories_list', methods: ['GET'])]
     public function list(CategorieRepository $categorieRepository): JsonResponse
@@ -41,7 +53,7 @@ class CategorieController extends AbstractController
     // CREATE — créer une nouvelle catégorie
     #[Route('/api/categories', name: 'api_categories_create', methods: ['POST'])]
     #[IsGranted('ROLE_ADMIN')]
-    public function create(Request $request, EntityManagerInterface $em): JsonResponse
+    public function create(Request $request, EntityManagerInterface $em, ValidatorInterface $validator): JsonResponse
     {
         $donnees = json_decode($request->getContent(), true);
 
@@ -49,6 +61,11 @@ class CategorieController extends AbstractController
         $categorie->setNom($donnees['nom'] ?? '');
         $categorie->setSlug($donnees['slug'] ?? '');
         $categorie->setDescription($donnees['description'] ?? null);
+
+        $violations = $validator->validate($categorie);
+        if (count($violations) > 0) {
+            return $this->json(['erreur' => implode(' ', $this->erreursValidation($violations))], 400);
+        }
 
         $em->persist($categorie);
         $em->flush();
@@ -59,8 +76,12 @@ class CategorieController extends AbstractController
     // UPDATE — modifier une catégorie existante
     #[Route('/api/categories/{id}', name: 'api_categories_update', methods: ['PUT'])]
     #[IsGranted('ROLE_ADMIN')]
-    public function update(?Categorie $categorie, Request $request, EntityManagerInterface $em): JsonResponse
-    {
+    public function update(
+        ?Categorie $categorie,
+        Request $request,
+        EntityManagerInterface $em,
+        ValidatorInterface $validator
+    ): JsonResponse {
         if (!$categorie) {
             return $this->json(['erreur' => 'Catégorie introuvable'], 404);
         }
@@ -75,6 +96,11 @@ class CategorieController extends AbstractController
         }
         if (isset($donnees['description'])) {
             $categorie->setDescription($donnees['description']);
+        }
+
+        $violations = $validator->validate($categorie);
+        if (count($violations) > 0) {
+            return $this->json(['erreur' => implode(' ', $this->erreursValidation($violations))], 400);
         }
 
         $em->flush();

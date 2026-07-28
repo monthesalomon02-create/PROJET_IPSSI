@@ -36,6 +36,7 @@ function DetailEvenement({ token }) {
   const [erreur, setErreur] = useState("");
   const [message, setMessage] = useState("");
   const [inscrit, setInscrit] = useState(false);
+  const [meteo, setMeteo] = useState(null);
 
   const charger = () => {
     apiFetch(`/api/evenements/${id}`)
@@ -55,6 +56,15 @@ function DetailEvenement({ token }) {
 
   useEffect(() => {
     charger();
+  }, [id]);
+
+  // Prévision météo (silencieuse : rien à afficher si l'évènement est trop
+  // loin dans le temps, si l'API est indisponible ou si aucune clé n'est configurée)
+  useEffect(() => {
+    apiFetch(`/api/evenements/${id}/meteo`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => setMeteo(d && d.disponible ? d : null))
+      .catch(() => setMeteo(null));
   }, [id]);
 
   // Vérifie si l'utilisateur est déjà inscrit (via mes-inscriptions)
@@ -225,6 +235,35 @@ function DetailEvenement({ token }) {
               <p className="eh-muted">
                 📍 {ev.lieu} — {ev.adresse}
               </p>
+            </div>
+          )}
+
+          {meteo && (
+            <div style={{ marginTop: 24 }}>
+              <h2 style={{ fontSize: 20, marginBottom: 8 }}>Météo prévue</h2>
+              <div
+                className="eh-card eh-card-pad"
+                style={{ display: "flex", alignItems: "center", gap: 14 }}
+              >
+                {meteo.icone && (
+                  <img
+                    src={`https://openweathermap.org/img/wn/${meteo.icone}@2x.png`}
+                    alt={meteo.description || "météo"}
+                    style={{ width: 48, height: 48 }}
+                  />
+                )}
+                <div>
+                  <div style={{ fontSize: 22, fontWeight: 700 }}>
+                    {meteo.temperature}°C
+                  </div>
+                  <div
+                    className="eh-muted"
+                    style={{ fontSize: 13, textTransform: "capitalize" }}
+                  >
+                    {meteo.description}
+                  </div>
+                </div>
+              </div>
             </div>
           )}
         </div>

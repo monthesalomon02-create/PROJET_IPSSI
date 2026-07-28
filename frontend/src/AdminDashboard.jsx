@@ -3,7 +3,7 @@ import { apiFetch } from "./api";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 
-function AdminDashboard({ token }) {
+function AdminDashboard() {
   const [evenements, setEvenements] = useState([]);
   const [message, setMessage] = useState("");
 

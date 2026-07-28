@@ -34,7 +34,7 @@ const MOTIFS_PREDEFINIS = [
   "Doublon avec un évènement existant.",
 ];
 
-function AdminModeration({ token }) {
+function AdminModeration() {
   const [evenements, setEvenements] = useState([]);
   const [message, setMessage] = useState("");
   const [refus, setRefus] = useState(null); // l'évènement en cours de refus (ouvre la modale)

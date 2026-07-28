@@ -18,7 +18,7 @@ class EvenementControllerTest extends WebTestCase
     public function testCreationSansTokenEstRefusee(): void
     {
         $client = static::createClient();
-        $client->request('POST', '/api/evenements', [], [], 
+        $client->request('POST', '/api/evenements', [], [],
             ['CONTENT_TYPE' => 'application/json'],
             json_encode(['titre' => 'Test'])
         );
