@@ -25,6 +25,10 @@ class Categorie
     #[ORM\Column(length: 120)]
     #[Assert\NotBlank]
     #[Assert\Length(max: 120)]
+    #[Assert\Regex(
+        pattern: '/^[a-z0-9]+(-[a-z0-9]+)*$/',
+        message: 'Le slug ne doit contenir que des lettres minuscules, chiffres et tirets (ex : "table-ronde").'
+    )]
     private ?string $slug = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
