@@ -142,7 +142,7 @@ class EvenementControllerTest extends WebTestCase
      * L'API JSON ne fait aucun rendu HTML côté serveur (pas de risque XSS ici) ;
      * la protection réelle vient de l'échappement automatique de React côté front.
      * On vérifie ici que l'API stocke/restitue la valeur telle quelle, sans
-     * l'interpréter ni planter — c'est au front de ne jamais l'insérer en HTML brut.
+     * l'interpréter ni planter ; c'est au front de ne jamais l'insérer en HTML brut.
      */
     public function testPayloadScriptEstStockeSansEtreInterprete(): void
     {
