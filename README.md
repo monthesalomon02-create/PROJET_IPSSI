@@ -167,7 +167,13 @@ La suite comprend des **tests unitaires** (logique des entités) et des **tests 
 
 ## Intégration continue
 
-À chaque `push`, [GitHub Actions](https://github.com/Leroy020699/PROJET_IPSSI/actions) recrée un environnement neuf, monte une base MySQL temporaire, applique les migrations et exécute la suite de tests. Un commit n'est validé que si tous les tests passent.
+À chaque `push`, [GitHub Actions](https://github.com/Leroy020699/PROJET_IPSSI/actions) exécute trois jobs :
+
+- `tests-backend` : recrée un environnement neuf, monte une base MySQL temporaire, applique les migrations et exécute la suite PHPUnit.
+- `tests-frontend` : installe les dépendances npm, lance ESLint puis un build Vite.
+- `build-docker` (après succès des deux jobs précédents) : construit les images Docker backend et frontend, pour prouver que l'application se package correctement.
+
+Un commit n'est validé que si tous les jobs passent.
 
 ---
 
