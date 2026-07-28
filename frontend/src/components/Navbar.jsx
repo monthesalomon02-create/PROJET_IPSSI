@@ -25,6 +25,12 @@ function Navbar({ token, estAdmin, onDeconnexion }) {
         >
           Explorer
         </Link>
+        <Link
+          to="/confidentialite"
+          className={`eh-nav-link ${estActif("/confidentialite") ? "active" : ""}`}
+        >
+          Confidentialité
+        </Link>
 
         {token ? (
           <>

@@ -91,6 +91,26 @@ class AuthController extends AbstractController
         ]);
     }
 
+    // Droit à l'oubli (RGPD) : anonymise le compte plutôt que de le supprimer,
+    // car ses évènements/inscriptions (clés étrangères non nullables) doivent être conservés.
+    #[Route('/api/me', name: 'api_me_delete', methods: ['DELETE'])]
+    #[IsGranted('ROLE_USER')]
+    public function supprimerCompte(EntityManagerInterface $em): JsonResponse
+    {
+        /** @var Utilisateur $utilisateur */
+        $utilisateur = $this->getUser();
+
+        $utilisateur->setEmail('supprime+' . $utilisateur->getId() . '@eventhub.local');
+        $utilisateur->setNom('Compte');
+        $utilisateur->setPrenom('supprimé');
+        $utilisateur->setPassword(bin2hex(random_bytes(32))); // hash invalide → connexion impossible
+        $utilisateur->setIsActive(false);
+
+        $em->flush();
+
+        return $this->json(['message' => 'Compte supprimé']);
+    }
+
     #[Route('/api/admin/test', name: 'api_admin_test', methods: ['GET'])]
     #[IsGranted('ROLE_ADMIN')]
     public function adminTest(): JsonResponse

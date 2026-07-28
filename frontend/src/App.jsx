@@ -9,6 +9,7 @@ import PageLogin from "./pages/PageLogin";
 import PageInscription from "./pages/PageInscription";
 import Organisateur from "./pages/Organisateur";
 import Admin from "./pages/Admin";
+import Confidentialite from "./pages/Confidentialite";
 import "./App.css";
 
 function App() {
@@ -79,13 +80,18 @@ function App() {
           <Route
             path="/organisateur"
             element={
-              token ? <Organisateur token={token} /> : <Navigate to="/login" />
+              token ? (
+                <Organisateur token={token} onDeconnexion={seDeconnecter} />
+              ) : (
+                <Navigate to="/login" />
+              )
             }
           />
           <Route
             path="/admin"
             element={token ? <Admin token={token} /> : <Navigate to="/login" />}
           />
+          <Route path="/confidentialite" element={<Confidentialite />} />
         </Routes>
       </main>
     </BrowserRouter>
