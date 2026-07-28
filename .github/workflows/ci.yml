@@ -53,7 +53,12 @@ jobs:
           DATABASE_URL: "mysql://root:root@127.0.0.1:3306/evenements?serverVersion=8.0"
         run: php bin/console doctrine:migrations:migrate --env=test --no-interaction
 
-      # 6. Lancer les tests
+      # 6. Vérifier le respect des normes PSR-12
+      - name: Vérifier le style de code (PHP CS Fixer)
+        working-directory: ./backend
+        run: php vendor/bin/php-cs-fixer fix --dry-run --diff
+
+      # 7. Lancer les tests
       - name: Lancer PHPUnit
         working-directory: ./backend
         env:

@@ -49,15 +49,33 @@ class EvenementService
 
     public function modifier(Evenement $evenement, array $donnees): Evenement
     {
-        if (isset($donnees['titre']))        { $evenement->setTitre($donnees['titre']); }
-        if (isset($donnees['description']))  { $evenement->setDescription($donnees['description']); }
-        if (isset($donnees['date_debut']))   { $evenement->setDateDebut(new \DateTime($donnees['date_debut'])); }
-        if (isset($donnees['date_fin']))     { $evenement->setDateFin(new \DateTime($donnees['date_fin'])); }
-        if (isset($donnees['lieu']))         { $evenement->setLieu($donnees['lieu']); }
-        if (isset($donnees['adresse']))      { $evenement->setAdresse($donnees['adresse']); }
-        if (isset($donnees['capacite_max'])) { $evenement->setCapaciteMax($donnees['capacite_max']); }
-        if (isset($donnees['prix']))         { $evenement->setPrix($donnees['prix']); }
-        if (isset($donnees['image']))        { $evenement->setImage($donnees['image']); }
+        if (isset($donnees['titre'])) {
+            $evenement->setTitre($donnees['titre']);
+        }
+        if (isset($donnees['description'])) {
+            $evenement->setDescription($donnees['description']);
+        }
+        if (isset($donnees['date_debut'])) {
+            $evenement->setDateDebut(new \DateTime($donnees['date_debut']));
+        }
+        if (isset($donnees['date_fin'])) {
+            $evenement->setDateFin(new \DateTime($donnees['date_fin']));
+        }
+        if (isset($donnees['lieu'])) {
+            $evenement->setLieu($donnees['lieu']);
+        }
+        if (isset($donnees['adresse'])) {
+            $evenement->setAdresse($donnees['adresse']);
+        }
+        if (isset($donnees['capacite_max'])) {
+            $evenement->setCapaciteMax($donnees['capacite_max']);
+        }
+        if (isset($donnees['prix'])) {
+            $evenement->setPrix($donnees['prix']);
+        }
+        if (isset($donnees['image'])) {
+            $evenement->setImage($donnees['image']);
+        }
 
         if (isset($donnees['categorie_id'])) {
             $categorie = $this->categorieRepository->find($donnees['categorie_id']);
