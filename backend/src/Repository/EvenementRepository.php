@@ -41,9 +41,22 @@ class EvenementRepository extends ServiceEntityRepository
     //        ;
     //    }
 
-    public function findPublies(): array
+    // Les 3 requêtes ci-dessous alimentent des listes entièrement sérialisées
+    // (EvenementService::serialize() lit categorie, organisateur et inscriptions
+    // pour chaque évènement) : on charge ces relations en une seule requête plutôt
+    // que de laisser Doctrine les récupérer une par une (N+1) pour chaque évènement.
+    private function requeteAvecRelations(): \Doctrine\ORM\QueryBuilder
     {
         return $this->createQueryBuilder('e')
+            ->addSelect('c', 'o', 'i')
+            ->leftJoin('e.categorie', 'c')
+            ->leftJoin('e.organisateur', 'o')
+            ->leftJoin('e.inscriptions', 'i');
+    }
+
+    public function findPublies(): array
+    {
+        return $this->requeteAvecRelations()
             ->andWhere('e.statut = :statut')
             ->setParameter('statut', 'publie')
             ->orderBy('e.dateDebut', 'ASC')
@@ -56,7 +69,7 @@ class EvenementRepository extends ServiceEntityRepository
      */
     public function findByOrganisateur(int $organisateurId): array
     {
-        return $this->createQueryBuilder('e')
+        return $this->requeteAvecRelations()
             ->andWhere('e.organisateur = :id')
             ->setParameter('id', $organisateurId)
             ->orderBy('e.dateCreation', 'DESC')
@@ -69,7 +82,7 @@ class EvenementRepository extends ServiceEntityRepository
      */
     public function findEnAttente(): array
     {
-        return $this->createQueryBuilder('e')
+        return $this->requeteAvecRelations()
             ->andWhere('e.statut = :statut')
             ->setParameter('statut', 'en_attente')
             ->orderBy('e.dateSoumission', 'ASC')
