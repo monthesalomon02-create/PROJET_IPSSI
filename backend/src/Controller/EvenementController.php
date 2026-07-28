@@ -11,9 +11,22 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\Validator\ConstraintViolationListInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class EvenementController extends AbstractController
 {
+    // Regroupe les messages de violation en un tableau de chaînes
+    private function erreursValidation(ConstraintViolationListInterface $violations): array
+    {
+        $erreurs = [];
+        foreach ($violations as $violation) {
+            $erreurs[] = $violation->getMessage();
+        }
+
+        return $erreurs;
+    }
+
     // READ — liste de tous les évènements
     #[Route('/api/evenements', name: 'api_evenements_list', methods: ['GET'])]
     public function list(EvenementRepository $evenementRepository): JsonResponse
@@ -55,7 +68,8 @@ class EvenementController extends AbstractController
     public function create(
         Request $request,
         EntityManagerInterface $em,
-        CategorieRepository $categorieRepository
+        CategorieRepository $categorieRepository,
+        ValidatorInterface $validator
     ): JsonResponse {
         $donnees = json_decode($request->getContent(), true);
 
@@ -78,11 +92,12 @@ class EvenementController extends AbstractController
         $evenement->setStatut('brouillon');           // tout évènement naît en brouillon
         $evenement->setDateCreation(new \DateTime());  // date du jour, automatique
         $evenement->setCategorie($categorie);
-
-        $evenement->setStatut('brouillon');
-        $evenement->setDateCreation(new \DateTime());
-        $evenement->setCategorie($categorie);
         $evenement->setOrganisateur($this->getUser());
+
+        $violations = $validator->validate($evenement);
+        if (count($violations) > 0) {
+            return $this->json(['erreur' => implode(' ', $this->erreursValidation($violations))], 400);
+        }
 
         $em->persist($evenement);
         $em->flush();
@@ -96,7 +111,8 @@ class EvenementController extends AbstractController
         ?Evenement $evenement,
         Request $request,
         EntityManagerInterface $em,
-        CategorieRepository $categorieRepository
+        CategorieRepository $categorieRepository,
+        ValidatorInterface $validator
     ): JsonResponse {
         if (!$evenement) {
             return $this->json(['erreur' => 'Évènement introuvable'], 404);
@@ -121,6 +137,11 @@ class EvenementController extends AbstractController
             if ($categorie) {
                 $evenement->setCategorie($categorie);
             }
+        }
+
+        $violations = $validator->validate($evenement);
+        if (count($violations) > 0) {
+            return $this->json(['erreur' => implode(' ', $this->erreursValidation($violations))], 400);
         }
 
         $em->flush();

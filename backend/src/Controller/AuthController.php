@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
@@ -20,22 +21,23 @@ class AuthController extends AbstractController
         Request $request,
         EntityManagerInterface $em,
         UserPasswordHasherInterface $passwordHasher,
-        UtilisateurRepository $utilisateurRepository
+        UtilisateurRepository $utilisateurRepository,
+        ValidatorInterface $validator
     ): JsonResponse {
         $donnees = json_decode($request->getContent(), true);
 
-        // Vérifications de base
-        if (empty($donnees['email']) || empty($donnees['password'])) {
-            return $this->json(['erreur' => 'Email et mot de passe obligatoires'], 400);
+        // Le mot de passe en clair n'est jamais stocké : on le valide ici, avant hachage
+        if (empty($donnees['password']) || strlen($donnees['password']) < 8) {
+            return $this->json(['erreur' => 'Le mot de passe doit contenir au moins 8 caractères'], 400);
         }
 
         // L'email est-il déjà utilisé ?
-        if ($utilisateurRepository->findOneBy(['email' => $donnees['email']])) {
+        if (!empty($donnees['email']) && $utilisateurRepository->findOneBy(['email' => $donnees['email']])) {
             return $this->json(['erreur' => 'Cet email est déjà utilisé'], 409);
         }
 
         $utilisateur = new Utilisateur();
-        $utilisateur->setEmail($donnees['email']);
+        $utilisateur->setEmail($donnees['email'] ?? '');
         $utilisateur->setNom($donnees['nom'] ?? '');
         $utilisateur->setPrenom($donnees['prenom'] ?? '');
         $utilisateur->setRoles(['ROLE_USER']);
@@ -45,6 +47,16 @@ class AuthController extends AbstractController
         // On hache le mot de passe AVANT de l'enregistrer (jamais en clair !)
         $motDePasseHache = $passwordHasher->hashPassword($utilisateur, $donnees['password']);
         $utilisateur->setPassword($motDePasseHache);
+
+        $violations = $validator->validate($utilisateur);
+        if (count($violations) > 0) {
+            $erreurs = [];
+            foreach ($violations as $violation) {
+                $erreurs[] = $violation->getMessage();
+            }
+
+            return $this->json(['erreur' => implode(' ', $erreurs)], 400);
+        }
 
         $em->persist($utilisateur);
         $em->flush();
