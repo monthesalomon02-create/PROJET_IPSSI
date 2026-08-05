@@ -64,7 +64,7 @@ Aucune installation de PHP, Node ou MySQL n'est nécessaire sur la machine : tou
 ### 1. Cloner le dépôt
 
 ```bash
-git clone https://github.com/Leroy020699/PROJET_IPSSI.git
+git clone https://github.com/monthesalomon02-create/PROJET_IPSSI.git
 cd PROJET_IPSSI
 ```
 
