@@ -50,8 +50,9 @@ jobs:
       - name: Préparer la base de test
         working-directory: ./backend
         env:
+          APP_ENV: test
           DATABASE_URL: "mysql://root:root@127.0.0.1:3306/evenements_test?serverVersion=8.0"
-        run: php bin/console doctrine:migrations:migrate --env=test --no-interaction
+        run: php bin/console doctrine:migrations:migrate --no-interaction
 
       # 6. Vérifier le respect des normes PSR-12
       - name: Vérifier le style de code (PHP CS Fixer)
