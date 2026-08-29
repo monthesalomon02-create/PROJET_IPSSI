@@ -51,7 +51,7 @@ jobs:
         working-directory: ./backend
         env:
           APP_ENV: test
-          DATABASE_URL: "mysql://root:root@127.0.0.1:3306/evenements_test?serverVersion=8.0"
+          DATABASE_URL: "mysql://root:root@127.0.0.1:3306/evenements?serverVersion=8.0"
         run: php bin/console doctrine:migrations:migrate --no-interaction
 
       # 6. Vérifier le respect des normes PSR-12
@@ -63,7 +63,7 @@ jobs:
       - name: Lancer PHPUnit
         working-directory: ./backend
         env:
-          DATABASE_URL: "mysql://root:root@127.0.0.1:3306/evenements_test?serverVersion=8.0"
+          DATABASE_URL: "mysql://root:root@127.0.0.1:3306/evenements?serverVersion=8.0"
         run: php bin/phpunit
 
   tests-frontend:
