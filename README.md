@@ -173,7 +173,7 @@ docker compose exec frontend npm run test
 
 ## Intégration continue
 
-À chaque `push`, [GitHub Actions](https://github.com/Leroy020699/PROJET_IPSSI/actions) exécute trois jobs :
+À chaque `push`, [GitHub Actions](https://github.com/monthesalomon02-create/PROJET_IPSSI/actions) exécute trois jobs :
 
 - `tests-backend` : recrée un environnement neuf, monte une base MySQL temporaire, applique les migrations, vérifie le style de code (PSR-12 via PHP CS Fixer) et exécute la suite PHPUnit.
 - `tests-frontend` : installe les dépendances npm, lance ESLint, exécute la suite de tests (Vitest + Testing Library) puis un build Vite.
