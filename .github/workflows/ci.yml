@@ -5,6 +5,10 @@ on:
   push:
   pull_request:
 
+# Limite les droits du token GITHUB_TOKEN au strict nécessaire (lecture seule)
+permissions:
+  contents: read
+
 jobs:
   tests-backend:
     runs-on: ubuntu-latest
