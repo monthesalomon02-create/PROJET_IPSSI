@@ -26,7 +26,7 @@ Elle permet à des organisateurs de créer des évènements, à un administrateu
 | Couche               | Technologie                        |
 | -------------------- | ---------------------------------- |
 | Back-end             | Symfony 7 (API REST)               |
-| Front-end            | React 18 + Vite                    |
+| Front-end            | React 19 + Vite                    |
 | Base de données      | MySQL 8                            |
 | Authentification     | JWT (LexikJWTAuthenticationBundle) |
 | Validation           | Symfony Validator                  |
