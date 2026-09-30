@@ -27,4 +27,4 @@ else
 fi
 
 echo "🚀 Démarrage du serveur Symfony sur le port 8000..."
-php -S 0.0.0.0:8000 -t public
+php -S 0.0.0.0:${PORT:-8000} -t public
